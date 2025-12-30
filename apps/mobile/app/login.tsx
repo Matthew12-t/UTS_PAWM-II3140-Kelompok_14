@@ -73,21 +73,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [checkingSession, setCheckingSession] = useState(true);
   const router = useRouter();
-
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        router.replace("/(tabs)");
-      } else {
-        setCheckingSession(false);
-      }
-    };
-    checkSession();
-  }, []);
 
   // Login Logic
   const handleLogin = async () => {
@@ -131,23 +117,6 @@ export default function LoginScreen() {
       setLoading(false);
     }
   };
-
-  // Show loading while checking session
-  if (checkingSession) {
-    return (
-      <LinearGradient
-        colors={["#0f172a", "#312e81", "#1e1b4b"]}
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-      >
-        <Image 
-          source={require("../assets/chemlab.png")} 
-          style={{ width: 80, height: 80, borderRadius: 16, marginBottom: 16 }}
-          resizeMode="contain"
-        />
-        <Text style={{ color: "white", fontSize: 18 }}>Loading...</Text>
-      </LinearGradient>
-    );
-  }
 
   return (
     <LinearGradient

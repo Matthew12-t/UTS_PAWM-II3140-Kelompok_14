@@ -39,6 +39,14 @@ export default function RootLayout() {
         <Stack.Screen name="login" />
         <Stack.Screen name="signup" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen 
+          name="pathway/[id]" 
+          options={{ 
+            headerShown: false,
+            presentation: "modal",
+            animation: "slide_from_right"
+          }} 
+        />
       </Stack>
     </View>
   );

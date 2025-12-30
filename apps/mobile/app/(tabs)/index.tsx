@@ -6,8 +6,7 @@ import {
   TouchableOpacity, 
   RefreshControl,
   Animated,
-  Easing,
-  Alert
+  Easing
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -391,7 +390,7 @@ export default function DashboardScreen() {
                 progress={getProgressForPathway(pathway.id)}
                 onPress={() => {
                   // Navigate to pathway detail
-                  Alert.alert("Info", `Fitur pathway "${pathway.title}" akan segera tersedia di mobile!`);
+                  router.push(`/pathway/${pathway.id}`);
                 }}
               />
             ))

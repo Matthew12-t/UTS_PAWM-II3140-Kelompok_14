@@ -7,6 +7,8 @@ import {
   RefreshControl,
   Animated,
   Easing,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -193,8 +195,14 @@ const FloatingIcon = ({
 export default function ResultsScreen() {
   const [user, setUser] = useState<any>(null);
   const [quizResults, setQuizResults] = useState<any[]>([]);
+  const [pathways, setPathways] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedPathway, setSelectedPathway] = useState<number | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState<string>("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState<any[]>([]);
   const router = useRouter();
 
   // Fetch current user
@@ -210,25 +218,105 @@ export default function ResultsScreen() {
     fetchUser();
   }, []);
 
-  // Fetch quiz results
+  // Fetch quiz detail when modal opens
+  const fetchQuizDetail = async (pathwayId: number, title: string) => {
+    setSelectedPathway(pathwayId);
+    setSelectedTitle(title);
+    setModalVisible(true);
+    setModalLoading(true);
+
+    try {
+      // Fetch pathway content for questions
+      const { data: pathwayData } = await supabase
+        .from("pathways")
+        .select("content")
+        .eq("id", pathwayId)
+        .single();
+
+      // Fetch user's answers
+      const { data: answersData } = await supabase
+        .from("quiz_answers")
+        .select("*")
+        .eq("pathway_id", pathwayId)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true });
+
+      if (pathwayData && answersData) {
+        const questions = pathwayData.content?.questions || [];
+        const formattedAnswers = answersData.map((answer: any) => {
+          const question = questions.find((q: any) => q.id === answer.question_id);
+          return {
+            question_id: answer.question_id,
+            user_answer: answer.user_answer,
+            correct_answer: answer.correct_answer,
+            is_correct: answer.is_correct,
+            explanation: answer.explanation,
+            question_text: question?.question || "Pertanyaan tidak ditemukan",
+            options: question?.options || [],
+          };
+        });
+
+        // Get only the latest attempt (last N questions)
+        const questionsPerAttempt = questions.length;
+        const latestAttempt = formattedAnswers.slice(-questionsPerAttempt);
+        setQuizAnswers(latestAttempt);
+      }
+    } catch (error) {
+      console.error("Error fetching quiz detail:", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Fetch quiz results from user_pathway_progress
   const fetchResults = async () => {
     if (!user) return;
 
     try {
-      const { data: results, error } = await supabase
-        .from("quiz_attempts")
-        .select(`
-          *,
-          quizzes (
-            title,
-            type
-          )
-        `)
-        .eq("user_id", user.id)
-        .order("completed_at", { ascending: false });
+      // Fetch user pathway progress
+      const { data: progressData, error: progressError } = await supabase
+        .from("user_pathway_progress")
+        .select("*")
+        .eq("user_id", user.id);
 
-      if (results) {
-        setQuizResults(results);
+      if (progressError) {
+        console.error("Error fetching progress:", progressError);
+      }
+
+      // Fetch all pathways to get titles and types
+      const { data: pathwaysData, error: pathwaysError } = await supabase
+        .from("pathways")
+        .select("*")
+        .order("order_number", { ascending: true });
+
+      if (pathwaysError) {
+        console.error("Error fetching pathways:", pathwaysError);
+      }
+
+      if (pathwaysData) {
+        setPathways(pathwaysData);
+      }
+
+      if (progressData && pathwaysData) {
+        // Filter for completed quiz/final_test with scores
+        const formattedResults = progressData
+          .filter((p: any) => p.status === "completed" && p.score !== null)
+          .map((p: any) => {
+            const pathway = pathwaysData.find((pw: any) => pw.id === p.pathway_id);
+            return {
+              id: p.id,
+              pathwayId: p.pathway_id,
+              title: pathway?.title || "Unknown",
+              score: p.score || 0,
+              status: p.status,
+              type: pathway?.type,
+              orderNumber: pathway?.order_number,
+            };
+          })
+          .filter((r: any) => r.type === "quiz" || r.type === "final_test")
+          .sort((a: any, b: any) => a.orderNumber - b.orderNumber);
+
+        setQuizResults(formattedResults);
       }
     } catch (error) {
       console.error("Error fetching results:", error);
@@ -358,18 +446,198 @@ export default function ResultsScreen() {
               <ResultItem
                 key={result.id}
                 number={index + 1}
-                title={result.quizzes?.title || `Kuis ${index + 1}`}
-                type={result.quizzes?.type === "final_test" ? "Tes Akhir" : "Kuis"}
+                title={result.title || `Kuis ${index + 1}`}
+                type={result.type === "final_test" ? "Tes Akhir" : "Kuis"}
                 score={result.score || 0}
                 onPress={() => {
-                  // Navigate to result detail
-                  console.log("View result:", result.id);
+                  fetchQuizDetail(result.pathwayId, result.title);
                 }}
               />
             ))
           )}
         </View>
       </ScrollView>
+
+      {/* Quiz Detail Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.5)",
+        }}>
+          <View style={{
+            flex: 1,
+            marginTop: 60,
+            backgroundColor: "#1e1b4b",
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            overflow: "hidden",
+          }}>
+            {/* Modal Header */}
+            <LinearGradient
+              colors={["#6366f1", "#3b82f6"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                paddingTop: 20,
+                paddingBottom: 20,
+                paddingHorizontal: 20,
+              }}
+            >
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "white", fontSize: 20, fontWeight: "bold" }}>
+                    {selectedTitle}
+                  </Text>
+                  <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 13, marginTop: 4 }}>
+                    Pembahasan Jawaban Anda
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "white", fontSize: 18 }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+
+            {/* Modal Content */}
+            <ScrollView 
+              style={{ flex: 1 }}
+              contentContainerStyle={{ padding: 20 }}
+            >
+              {modalLoading ? (
+                <View style={{ padding: 40, alignItems: "center" }}>
+                  <ActivityIndicator size="large" color="#a5b4fc" />
+                  <Text style={{ color: "#a5b4fc", marginTop: 16 }}>Memuat pembahasan...</Text>
+                </View>
+              ) : quizAnswers.length === 0 ? (
+                <View style={{ padding: 40, alignItems: "center" }}>
+                  <Text style={{ fontSize: 40, marginBottom: 12 }}>📝</Text>
+                  <Text style={{ color: "#a5b4fc", textAlign: "center" }}>
+                    Tidak ada data pembahasan yang ditemukan.
+                  </Text>
+                </View>
+              ) : (
+                quizAnswers.map((answer, index) => (
+                  <View 
+                    key={index}
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      borderRadius: 16,
+                      padding: 16,
+                      marginBottom: 16,
+                      borderLeftWidth: 4,
+                      borderLeftColor: answer.is_correct ? "#22c55e" : "#ef4444",
+                    }}
+                  >
+                    {/* Question Header */}
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+                      <Text style={{ color: "white", fontSize: 15, fontWeight: "600", flex: 1, marginRight: 8 }}>
+                        Pertanyaan {index + 1}
+                      </Text>
+                      <View style={{
+                        backgroundColor: answer.is_correct ? "#22c55e" : "#ef4444",
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 12,
+                      }}>
+                        <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>
+                          {answer.is_correct ? "✓ Benar" : "✗ Salah"}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Question Text */}
+                    <Text style={{ color: "#e5e7eb", fontSize: 14, marginBottom: 12, lineHeight: 20 }}>
+                      {answer.question_text}
+                    </Text>
+
+                    {/* User Answer */}
+                    <View style={{ marginBottom: 8 }}>
+                      <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Jawaban Anda:</Text>
+                      <View style={{
+                        backgroundColor: answer.is_correct ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
+                        padding: 12,
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: answer.is_correct ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)",
+                      }}>
+                        <Text style={{ color: "white", fontSize: 14 }}>
+                          {answer.options[answer.user_answer] || "Tidak dijawab"}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Correct Answer (if wrong) */}
+                    {!answer.is_correct && (
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Jawaban yang Benar:</Text>
+                        <View style={{
+                          backgroundColor: "rgba(34,197,94,0.2)",
+                          padding: 12,
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "rgba(34,197,94,0.3)",
+                        }}>
+                          <Text style={{ color: "#22c55e", fontSize: 14 }}>
+                            {answer.options[answer.correct_answer]}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Explanation */}
+                    {answer.explanation && (
+                      <View>
+                        <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Pembahasan:</Text>
+                        <View style={{
+                          backgroundColor: "rgba(99,102,241,0.1)",
+                          padding: 12,
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "rgba(99,102,241,0.2)",
+                        }}>
+                          <Text style={{ color: "#a5b4fc", fontSize: 13, lineHeight: 20 }}>
+                            {answer.explanation}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                ))
+              )}
+            </ScrollView>
+
+            {/* Close Button */}
+            <View style={{ padding: 20, paddingBottom: 40 }}>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={{
+                  backgroundColor: "#6366f1",
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>Tutup</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
