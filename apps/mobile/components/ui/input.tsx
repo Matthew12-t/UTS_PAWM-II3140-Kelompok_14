@@ -1,11 +1,26 @@
-import { TextInput } from 'react-native';
+import { TextInput, StyleSheet } from 'react-native';
 
-export function Input({ className, ...props }: React.ComponentProps<typeof TextInput>) {
+export function Input({ style, ...props }: React.ComponentProps<typeof TextInput>) {
   return (
     <TextInput
-      placeholderTextColor="#64748b"
-      className={`flex h-12 w-full rounded-md border border-input bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground ${className ?? ''}`}
+      placeholderTextColor="#9ca3af"
+      style={[styles.input, style]}
       {...props}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  input: {
+    height: 48,
+    width: '100%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#f9fafb',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#1f2937',
+  },
+});
