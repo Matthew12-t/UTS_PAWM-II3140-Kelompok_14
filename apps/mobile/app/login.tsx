@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, Easing } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, Easing, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Input } from "../components/ui/input";
@@ -139,7 +139,11 @@ export default function LoginScreen() {
         colors={["#0f172a", "#312e81", "#1e1b4b"]}
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
       >
-        <Text style={{ fontSize: 48, marginBottom: 16 }}>⚛️</Text>
+        <Image 
+          source={require("../assets/chemlab.png")} 
+          style={{ width: 80, height: 80, borderRadius: 16, marginBottom: 16 }}
+          resizeMode="contain"
+        />
         <Text style={{ color: "white", fontSize: 18 }}>Loading...</Text>
       </LinearGradient>
     );
@@ -170,7 +174,11 @@ export default function LoginScreen() {
         {/* Header */}
         <View style={{ alignItems: "center", marginBottom: 28 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-            <Text style={{ fontSize: 36 }}>⚛️</Text>
+            <Image 
+              source={require("../assets/chemlab.png")} 
+              style={{ width: 40, height: 40, borderRadius: 8 }}
+              resizeMode="contain"
+            />
             <Text style={{ fontSize: 36, fontWeight: "bold", color: "white", marginLeft: 8 }}>ChemLab</Text>
           </View>
           <Text style={{ color: "#a5b4fc", fontSize: 16 }}>Virtual Chemistry Laboratory</Text>

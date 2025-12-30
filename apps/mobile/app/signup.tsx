@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, Easing } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, Easing, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Input } from "../components/ui/input";
@@ -185,7 +185,11 @@ export default function SignupScreen() {
         {/* Header */}
         <View style={{ alignItems: "center", marginBottom: 28 }}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-            <Text style={{ fontSize: 36 }}>⚛️</Text>
+            <Image 
+              source={require("../assets/chemlab.png")} 
+              style={{ width: 40, height: 40, borderRadius: 8 }}
+              resizeMode="contain"
+            />
             <Text style={{ fontSize: 36, fontWeight: "bold", color: "white", marginLeft: 8 }}>ChemLab</Text>
           </View>
           <Text style={{ color: "#a5b4fc", fontSize: 16 }}>Create Your Account</Text>
