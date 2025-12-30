@@ -196,7 +196,7 @@ export default function TopicView({ pathway, user, onComplete, onBack }: TopicVi
             }}
           >
             <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
-              {isCompleting ? "Menyimpan..." : "Selesai ✓"}
+              {isCompleting ? "Menyimpan..." : "Selanjutnya →"}
             </Text>
           </TouchableOpacity>
         </View>

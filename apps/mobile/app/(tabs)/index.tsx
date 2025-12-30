@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { 
   View, 
   Text, 
@@ -6,9 +6,11 @@ import {
   TouchableOpacity, 
   RefreshControl,
   Animated,
-  Easing
+  Easing,
+  AppState,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase, getCurrentUser, signOut } from "../../lib/supabase";
 
@@ -226,6 +228,16 @@ export default function DashboardScreen() {
       fetchData();
     }
   }, [user]);
+
+  // Refresh data when screen comes into focus (after returning from pathway)
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        console.log("[Dashboard] Screen focused, refreshing data...");
+        fetchData();
+      }
+    }, [user])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);

@@ -151,23 +151,6 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Hapus Akun",
-      "Apakah Anda yakin ingin menghapus akun? Semua data akan dihapus permanen.",
-      [
-        { text: "Batal", style: "cancel" },
-        { 
-          text: "Hapus", 
-          style: "destructive",
-          onPress: async () => {
-            // TODO: Implement delete account
-            Alert.alert("Info", "Fitur ini akan segera tersedia.");
-          }
-        },
-      ]
-    );
-  };
 
   if (!user) {
     return (
@@ -337,13 +320,6 @@ export default function SettingsScreen() {
             title="Keluar"
             subtitle="Keluar dari akun Anda"
             onPress={handleSignOut}
-            danger
-          />
-          <SettingsItem
-            icon="🗑️"
-            title="Hapus Akun"
-            subtitle="Hapus akun dan semua data"
-            onPress={handleDeleteAccount}
             danger
           />
         </SettingsSection>

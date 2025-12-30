@@ -38,19 +38,28 @@ export default function PathwayScreen() {
         setPathway(pathwayData);
 
         // Create or update progress
-        const { data: existingProgress } = await supabase
+        const { data: existingProgress, error: progressError } = await supabase
           .from("user_pathway_progress")
           .select("*")
           .eq("user_id", currentUser.id)
           .eq("pathway_id", id)
           .single();
 
+        console.log("[Pathway] Existing progress on load:", existingProgress, "Error:", progressError);
+
         if (!existingProgress) {
-          await supabase.from("user_pathway_progress").insert({
+          console.log("[Pathway] Creating new progress record for pathway:", id);
+          const { error: insertError } = await supabase.from("user_pathway_progress").insert({
             user_id: currentUser.id,
             pathway_id: id,
             status: "in_progress",
           });
+          
+          if (insertError) {
+            console.error("[Pathway] Error creating progress:", insertError);
+          } else {
+            console.log("[Pathway] Progress record created successfully");
+          }
         }
       } catch (err: any) {
         setError(err.message || "Failed to load pathway");
@@ -64,19 +73,61 @@ export default function PathwayScreen() {
 
   const handleComplete = async (score?: number) => {
     try {
-      // Update progress
-      const updateData: any = { status: "completed" };
+      console.log("[Pathway] Completing pathway:", pathway.id, "for user:", user.id);
+      
+      // First check if progress exists
+      const { data: existingProgress, error: fetchError } = await supabase
+        .from("user_pathway_progress")
+        .select("id, status")
+        .eq("user_id", user.id)
+        .eq("pathway_id", pathway.id)
+        .single();
+
+      console.log("[Pathway] Existing progress:", existingProgress, "Error:", fetchError);
+
+      const updateData: any = { 
+        status: "completed",
+        updated_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+      };
       if (score !== undefined) {
         updateData.score = score;
       }
 
-      await supabase
-        .from("user_pathway_progress")
-        .update(updateData)
-        .eq("user_id", user.id)
-        .eq("pathway_id", pathway.id);
+      if (existingProgress) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from("user_pathway_progress")
+          .update(updateData)
+          .eq("id", existingProgress.id);
 
-      // Find next pathway
+        if (updateError) {
+          console.error("[Pathway] Error updating progress:", updateError);
+        } else {
+          console.log("[Pathway] Progress updated successfully");
+        }
+      } else {
+        // Insert new record
+        const insertData = {
+          user_id: user.id,
+          pathway_id: pathway.id,
+          status: "completed",
+          score: score,
+          completed_at: new Date().toISOString(),
+        };
+        
+        const { error: insertError } = await supabase
+          .from("user_pathway_progress")
+          .insert(insertData);
+
+        if (insertError) {
+          console.error("[Pathway] Error inserting progress:", insertError);
+        } else {
+          console.log("[Pathway] Progress inserted successfully");
+        }
+      }
+
+      // Find next pathway and navigate to it
       const { data: nextPathway } = await supabase
         .from("pathways")
         .select("id")
@@ -84,12 +135,17 @@ export default function PathwayScreen() {
         .single();
 
       if (nextPathway) {
+        console.log("[Pathway] Navigating to next pathway:", nextPathway.id);
         router.replace(`/pathway/${nextPathway.id}`);
       } else {
+        // No more pathways, go back to dashboard
+        console.log("[Pathway] No more pathways, going to dashboard");
         router.replace("/(tabs)");
       }
     } catch (err) {
-      console.error("Error completing pathway:", err);
+      console.error("[Pathway] Error completing pathway:", err);
+      // Still navigate back even if there's an error
+      router.replace("/(tabs)");
     }
   };
 

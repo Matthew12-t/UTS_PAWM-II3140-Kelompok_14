@@ -5,9 +5,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Input } from "../components/ui/input";
 import { supabase, signInWithGoogle } from "../lib/supabase";
 import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
 
 // Warm up browser untuk Google OAuth
 WebBrowser.maybeCompleteAuthSession();
+
+// Get redirect URL for email verification
+const redirectUrl = AuthSession.makeRedirectUri({
+  scheme: 'chemlab',
+  path: 'auth/callback',
+});
 
 // Animated Floating Icon Component
 const FloatingIcon = ({ 
@@ -118,6 +125,7 @@ export default function SignupScreen() {
         password,
         options: {
           data: { full_name: fullName.trim() },
+          emailRedirectTo: redirectUrl,
         },
       });
 

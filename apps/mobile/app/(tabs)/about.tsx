@@ -145,11 +145,9 @@ const PathwayPreviewCard = ({
 // Team Member Card
 const TeamMemberCard = ({
   name,
-  role,
   nim,
 }: {
   name: string;
-  role: string;
   nim: string;
 }) => (
   <View
@@ -176,9 +174,6 @@ const TeamMemberCard = ({
     </View>
     <Text style={{ color: "white", fontSize: 16, fontWeight: "bold", marginBottom: 4 }}>
       {name}
-    </Text>
-    <Text style={{ color: "#a5b4fc", fontSize: 14, marginBottom: 4 }}>
-      {role}
     </Text>
     <Text style={{ color: "rgba(199, 210, 254, 0.6)", fontSize: 12 }}>
       NIM: {nim}
@@ -241,29 +236,15 @@ export default function AboutScreen() {
               color: "rgba(199, 210, 254, 0.8)",
               fontSize: 16,
               lineHeight: 24,
-              marginBottom: 24,
+              marginBottom: 0,
             }}
           >
             ChemLab adalah platform pembelajaran kimia interaktif yang memungkinkan Anda mempelajari ikatan kimia melalui simulasi virtual dan pembelajaran hands-on.
           </Text>
-
-          <View style={{
-            backgroundColor: "rgba(99, 102, 241, 0.2)",
-            borderRadius: 16,
-            padding: 20,
-            borderWidth: 1,
-            borderColor: "rgba(99, 102, 241, 0.3)",
-          }}>
-            <Text style={{ color: "#a5b4fc", fontSize: 14, lineHeight: 22 }}>
-              🎓 Dibuat sebagai tugas PAWM (Pengembangan Aplikasi Web dan Mobile){"\n"}
-              📚 Fokus pada pembelajaran Chemical Bonding{"\n"}
-              🔬 Fitur simulasi interaktif ikatan kimia
-            </Text>
-          </View>
         </View>
 
         {/* Features Section */}
-        <View style={{ paddingHorizontal: 20, paddingVertical: 20 }}>
+        <View style={{ paddingHorizontal: 20, paddingVertical: 0 }}>
           <Text
             style={{
               color: "white",
@@ -408,14 +389,29 @@ export default function AboutScreen() {
               marginBottom: 16,
             }}
           >
-            Developer
+            Developer Team
           </Text>
 
-          <TeamMemberCard
-            name="Matthew"
-            role="Full Stack Developer"
-            nim="18223096"
-          />
+          {/* Container untuk layout Kanan-Kiri */}
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            
+            {/* Developer 1 (Kiri) */}
+            <View style={{ flex: 1 }}>
+              <TeamMemberCard
+                name="Matthew"
+                nim="18223096"
+              />
+            </View>
+
+            {/* Developer 2 (Kanan) */}
+            <View style={{ flex: 1 }}>
+              <TeamMemberCard
+                name="Darryl Rayhananta" 
+                nim="18223xxx"
+              />
+            </View>
+
+          </View>
         </View>
 
         {/* Footer */}

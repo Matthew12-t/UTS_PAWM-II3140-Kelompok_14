@@ -21,10 +21,10 @@ interface SimulationViewProps {
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // ============= SIMULASI SENYAWA (Element Selector) =============
-function SimulasiSenyawa({ onComplete, onBack }: { onComplete: () => void; onBack: () => void }) {
+function SimulasiSenyawa({ pathway, onComplete, onBack }: { pathway: any; onComplete: () => void; onBack: () => void }) {
   const [leftElement, setLeftElement] = useState("Hydrogen");
   const [rightElement, setRightElement] = useState("Oxygen");
-  const [distance, setDistance] = useState(260);
+  const [distance, setDistance] = useState(120); // Reduced initial distance so atoms are visible
   const [interaction, setInteraction] = useState("Attractive");
   const [showLeftPicker, setShowLeftPicker] = useState(false);
   const [showRightPicker, setShowRightPicker] = useState(false);
@@ -118,13 +118,30 @@ function SimulasiSenyawa({ onComplete, onBack }: { onComplete: () => void; onBac
   };
 
   return (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
-      {/* Title */}
-      <Text style={styles.title}>Simulasi Senyawa</Text>
-      <View style={styles.divider} />
+    <LinearGradient
+      colors={["#0f172a", "#312e81", "#1e1b4b"]}
+      style={{ flex: 1 }}
+    >
+      {/* Header - Same as other pathways */}
+      <View style={{
+        backgroundColor: "rgba(255,255,255,0.1)",
+        paddingTop: 50,
+        paddingBottom: 16,
+        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(255,255,255,0.1)",
+      }}>
+        <TouchableOpacity onPress={onBack} style={{ marginBottom: 8 }}>
+          <Text style={{ color: "#a5b4fc", fontSize: 14 }}>← Kembali ke Dashboard</Text>
+        </TouchableOpacity>
+        <Text style={{ fontSize: 22, fontWeight: "bold", color: "white" }}>
+          {pathway?.title || "Simulasi Senyawa"}
+        </Text>
+      </View>
 
-      {/* Main Layout - Row for Energy + Simulation */}
-      <View style={styles.mainRow}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+        {/* Main Layout - Row for Energy + Simulation */}
+        <View style={styles.mainRow}>
         {/* Potential Energy Bar */}
         <View style={styles.energyContainer}>
           <Text style={styles.energyTitle}>Potential{"\n"}Energy</Text>
@@ -321,19 +338,20 @@ function SimulasiSenyawa({ onComplete, onBack }: { onComplete: () => void; onBac
             style={styles.completeButtonGradient}
           >
             <Text style={styles.completeButtonText}>
-              {isCompleting ? "Menyimpan..." : "Selesai"}
+              {isCompleting ? "Menyimpan..." : "Selanjutnya →"}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </LinearGradient>
   );
 }
 
 // ============= SIMULASI PEMBENTUKAN IKATAN (Draggable Atoms with Force) =============
-function SimulasiPembentukanIkatan({ onComplete, onBack }: { onComplete: () => void; onBack: () => void }) {
+function SimulasiPembentukanIkatan({ pathway, onComplete, onBack }: { pathway: any; onComplete: () => void; onBack: () => void }) {
   const [isCompleting, setIsCompleting] = useState(false);
-  const [interaction, setInteraction] = useState("...");
+  const [interaction, setInteraction] = useState("Neutral");
   const [interactionColor, setInteractionColor] = useState("#9ca3af");
 
   const canvasWidth = SCREEN_WIDTH - 32;
@@ -376,10 +394,6 @@ function SimulasiPembentukanIkatan({ onComplete, onBack }: { onComplete: () => v
     );
   }, [a1X, a2X]);
 
-  // Calculate glow intensity based on distance
-  const distance = Math.abs(a2X - a1X);
-  const overlapFactor = Math.max(0, 1 - distance / 200);
-
   const panResponder1 = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -421,148 +435,269 @@ function SimulasiPembentukanIkatan({ onComplete, onBack }: { onComplete: () => v
   // Arrow direction based on force
   const force = computeForce(a1X, a2X);
 
+  // Calculate distance and overlap factor for electron clouds
+  const distance = Math.abs(a2X - a1X);
+  const overlapFactor = Math.max(0, 1 - distance / 300);
+  
+  // Base cloud radius (smaller when far apart)
+  const baseCloudRadius = 80;
+  const cloudRadius = baseCloudRadius + overlapFactor * 40;
+  
+  // Arrow length based on force magnitude
+  const arrowLength = Math.min(60, Math.max(20, Math.abs(force.mag) * 100 + 20));
+
   return (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
-      {/* Title */}
-      <Text style={styles.title}>Simulasi Pembentukan Ikatan Kimia</Text>
-      <View style={styles.divider} />
-
-      {/* Canvas Container */}
-      <View style={styles.canvasContainer}>
-        {/* Header */}
-        <View style={styles.canvasHeader}>
-          <Text style={styles.canvasHeaderText}>Pembentukkan Ikatan Kimia</Text>
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.resetButtonText}>Reset</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Cyan border */}
-        <View style={styles.canvasBorder} />
-
-        {/* Canvas */}
-        <View style={[styles.canvas, { width: canvasWidth, height: canvasHeight }]}>
-          {/* Red glow effect when close */}
-          {overlapFactor > 0.1 && (
-            <View
-              style={[
-                styles.glowEffect,
-                {
-                  left: (a1X + a2X) / 2 - 120,
-                  top: midY - 120,
-                  width: 240,
-                  height: 240,
-                  opacity: Math.min(0.9, overlapFactor * 1.2),
-                  transform: [{ scale: 0.8 + overlapFactor * 0.5 }],
-                },
-              ]}
-            />
-          )}
-
-          {/* Connection line with arrows */}
-          <View
-            style={[
-              styles.connectionLine,
-              {
-                left: a1X,
-                width: a2X - a1X,
-                top: midY - 1.5,
-              },
-            ]}
-          />
-
-          {/* Left Arrow */}
-          <View style={[styles.arrowLeft, { left: a1X - 35, top: midY - 12 }]}>
-            <Text style={styles.arrowText}>
-              {force.mag > 0 ? "◀" : "▶"}
-            </Text>
-          </View>
-
-          {/* Right Arrow */}
-          <View style={[styles.arrowRight, { left: a2X + 10, top: midY - 12 }]}>
-            <Text style={styles.arrowText}>
-              {force.mag > 0 ? "▶" : "◀"}
-            </Text>
-          </View>
-
-          {/* Atom 1 */}
-          <View
-            {...panResponder1.panHandlers}
-            style={[
-              styles.draggableAtom,
-              {
-                left: a1X - atomR,
-                top: midY - atomR,
-              },
-            ]}
-          >
-            <LinearGradient
-              colors={["#63b3ed", "#3182ce"]}
-              style={styles.atomGradient}
-            >
-              <View style={styles.atomHighlight} />
-            </LinearGradient>
-          </View>
-
-          {/* Atom 2 */}
-          <View
-            {...panResponder2.panHandlers}
-            style={[
-              styles.draggableAtom,
-              {
-                left: a2X - atomR,
-                top: midY - atomR,
-              },
-            ]}
-          >
-            <LinearGradient
-              colors={["#63b3ed", "#3182ce"]}
-              style={styles.atomGradient}
-            >
-              <View style={styles.atomHighlight} />
-            </LinearGradient>
-          </View>
-
-          {/* Interaction Status */}
-          <View style={styles.canvasInteraction}>
-            <Text style={[styles.canvasInteractionText, { color: interactionColor }]}>
-              Overall interaction: {interaction}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Instructions */}
-      <View style={styles.instructions}>
-        <Text style={styles.instructionsText}>
-          💡 Seret atom untuk mengubah jarak dan lihat bagaimana gaya interaksi berubah.
-          Merah = Repulsive (tolak), Hijau = Attractive (tarik).
+    <LinearGradient
+      colors={["#0f172a", "#312e81", "#1e1b4b"]}
+      style={{ flex: 1 }}
+    >
+      {/* Header - Same as other pathways */}
+      <View style={{
+        backgroundColor: "rgba(255,255,255,0.1)",
+        paddingTop: 50,
+        paddingBottom: 16,
+        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(255,255,255,0.1)",
+      }}>
+        <TouchableOpacity onPress={onBack} style={{ marginBottom: 8 }}>
+          <Text style={{ color: "#a5b4fc", fontSize: 14 }}>← Kembali ke Dashboard</Text>
+        </TouchableOpacity>
+        <Text style={{ fontSize: 22, fontWeight: "bold", color: "white" }}>
+          {pathway?.title || "Simulasi Pembentukan Ikatan Kimia"}
         </Text>
       </View>
 
-      {/* Bottom Buttons */}
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Text style={styles.backButtonText}>Kembali</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.completeButton}
-          onPress={handleComplete}
-          disabled={isCompleting}
-        >
-          <LinearGradient
-            colors={["#6366f1", "#8b5cf6"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.completeButtonGradient}
-          >
-            <Text style={styles.completeButtonText}>
-              {isCompleting ? "Menyimpan..." : "Selesai"}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+        {/* Canvas Container */}
+        <View style={styles.canvasContainer}>
+          {/* Header */}
+          <View style={styles.canvasHeader}>
+            <Text style={styles.canvasHeaderText}>Pembentukkan Ikatan Kimia</Text>
+            <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+              <Text style={styles.resetButtonText}>Reset</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Cyan border */}
+          <View style={styles.canvasBorder} />
+
+          {/* Canvas */}
+          <View style={[styles.canvas, { width: canvasWidth, height: canvasHeight }]}>
+            
+            {/* Red glow effect for LEFT atom - individual cloud */}
+            <View
+              style={{
+                position: "absolute",
+                left: a1X - cloudRadius,
+                top: midY - cloudRadius,
+                width: cloudRadius * 2,
+                height: cloudRadius * 2,
+                borderRadius: cloudRadius,
+                overflow: "hidden",
+              }}
+            >
+              <LinearGradient
+                colors={[
+                  `rgba(255,0,0,${0.6 - overlapFactor * 0.2})`, 
+                  `rgba(255,0,0,${0.3 - overlapFactor * 0.1})`, 
+                  "rgba(255,0,0,0.05)", 
+                  "transparent"
+                ]}
+                style={{
+                  width: cloudRadius * 2,
+                  height: cloudRadius * 2,
+                  borderRadius: cloudRadius,
+                }}
+                start={{ x: 0.5, y: 0.5 }}
+                end={{ x: 1, y: 1 }}
+              />
+            </View>
+
+            {/* Red glow effect for RIGHT atom - individual cloud */}
+            <View
+              style={{
+                position: "absolute",
+                left: a2X - cloudRadius,
+                top: midY - cloudRadius,
+                width: cloudRadius * 2,
+                height: cloudRadius * 2,
+                borderRadius: cloudRadius,
+                overflow: "hidden",
+              }}
+            >
+              <LinearGradient
+                colors={[
+                  `rgba(255,0,0,${0.6 - overlapFactor * 0.2})`, 
+                  `rgba(255,0,0,${0.3 - overlapFactor * 0.1})`, 
+                  "rgba(255,0,0,0.05)", 
+                  "transparent"
+                ]}
+                style={{
+                  width: cloudRadius * 2,
+                  height: cloudRadius * 2,
+                  borderRadius: cloudRadius,
+                }}
+                start={{ x: 0.5, y: 0.5 }}
+                end={{ x: 1, y: 1 }}
+              />
+            </View>
+
+            {/* Merged cloud in the middle when overlapping (attractive zone) */}
+            {overlapFactor > 0.2 && (
+              <View
+                style={{
+                  position: "absolute",
+                  left: (a1X + a2X) / 2 - cloudRadius * 1.2,
+                  top: midY - cloudRadius * 0.8,
+                  width: cloudRadius * 2.4,
+                  height: cloudRadius * 1.6,
+                  borderRadius: cloudRadius,
+                  overflow: "hidden",
+                }}
+              >
+                <LinearGradient
+                  colors={[
+                    `rgba(255,0,0,${0.5 * overlapFactor})`, 
+                    `rgba(255,0,0,${0.3 * overlapFactor})`, 
+                    "transparent"
+                  ]}
+                  style={{
+                    width: cloudRadius * 2.4,
+                    height: cloudRadius * 1.6,
+                    borderRadius: cloudRadius,
+                  }}
+                  start={{ x: 0.5, y: 0.5 }}
+                  end={{ x: 1, y: 1 }}
+                />
+              </View>
+            )}
+
+            {/* Left Arrow - starts from atom, points LEFT when repulsive, RIGHT when attractive */}
+            <View 
+              style={{ 
+                position: "absolute", 
+                left: force.kind === "Repulsive" ? a1X - arrowLength - atomR : a1X + atomR,
+                top: midY - 2,
+                width: arrowLength,
+                height: 4,
+                backgroundColor: "#FFD700",
+              }} 
+            />
+            {/* Left Arrow Head */}
+            <Text style={{ 
+              position: "absolute", 
+              left: force.kind === "Repulsive" ? a1X - arrowLength - atomR - 12 : a1X + atomR + arrowLength - 4,
+              top: midY - 12,
+              fontSize: 16, 
+              color: "#FFD700", 
+              fontWeight: "bold",
+            }}>
+              {force.kind === "Repulsive" ? "◀" : "▶"}
             </Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+
+            {/* Right Arrow - starts from atom, points RIGHT when repulsive, LEFT when attractive */}
+            <View 
+              style={{ 
+                position: "absolute", 
+                left: force.kind === "Repulsive" ? a2X + atomR : a2X - arrowLength - atomR,
+                top: midY - 2,
+                width: arrowLength,
+                height: 4,
+                backgroundColor: "#FFD700",
+              }} 
+            />
+            {/* Right Arrow Head */}
+            <Text style={{ 
+              position: "absolute", 
+              left: force.kind === "Repulsive" ? a2X + atomR + arrowLength - 4 : a2X - arrowLength - atomR - 12,
+              top: midY - 12,
+              fontSize: 16, 
+              color: "#FFD700", 
+              fontWeight: "bold",
+            }}>
+              {force.kind === "Repulsive" ? "▶" : "◀"}
+            </Text>
+
+            {/* Atom 1 (Left) */}
+            <View
+              {...panResponder1.panHandlers}
+              style={[
+                styles.draggableAtom,
+                {
+                  left: a1X - atomR,
+                  top: midY - atomR,
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["#87CEEB", "#4682B4"]}
+                style={styles.atomGradient}
+              >
+                <View style={styles.atomHighlight} />
+              </LinearGradient>
+            </View>
+
+            {/* Atom 2 (Right) */}
+            <View
+              {...panResponder2.panHandlers}
+              style={[
+                styles.draggableAtom,
+                {
+                  left: a2X - atomR,
+                  top: midY - atomR,
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["#87CEEB", "#4682B4"]}
+                style={styles.atomGradient}
+              >
+                <View style={styles.atomHighlight} />
+              </LinearGradient>
+            </View>
+
+            {/* Interaction Status */}
+            <View style={styles.canvasInteraction}>
+              <Text style={[styles.canvasInteractionText, { color: interactionColor }]}>
+                Overall interaction: {interaction}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Instructions */}
+        <View style={styles.instructions}>
+          <Text style={styles.instructionsText}>
+            💡 Seret atom untuk mengubah jarak dan lihat bagaimana gaya interaksi berubah.
+            Jingga = Repulsive (tolak menolak), Hijau = Attractive (tarik menarik).
+          </Text>
+        </View>
+
+        {/* Bottom Buttons */}
+        <View style={styles.bottomButtons}>
+          <TouchableOpacity style={styles.backButton} onPress={onBack}>
+            <Text style={styles.backButtonText}>Kembali</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.completeButton}
+            onPress={handleComplete}
+            disabled={isCompleting}
+          >
+            <LinearGradient
+              colors={["#6366f1", "#8b5cf6"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.completeButtonGradient}
+            >
+              <Text style={styles.completeButtonText}>
+                {isCompleting ? "Menyimpan..." : "Selanjutnya →"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
@@ -580,10 +715,10 @@ export default function SimulationView({
     pathway.order_number === 4; // Assuming order 4 is the bond formation simulation
 
   if (isIkatanSimulation) {
-    return <SimulasiPembentukanIkatan onComplete={onComplete} onBack={onBack} />;
+    return <SimulasiPembentukanIkatan pathway={pathway} onComplete={onComplete} onBack={onBack} />;
   }
 
-  return <SimulasiSenyawa onComplete={onComplete} onBack={onBack} />;
+  return <SimulasiSenyawa pathway={pathway} onComplete={onComplete} onBack={onBack} />;
 }
 
 const styles = StyleSheet.create({
