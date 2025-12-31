@@ -1,9 +1,68 @@
-import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, Linking, Image } from "react-native";
+import React, { useRef, useEffect } from "react";
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, Linking, Image, Animated, Easing } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
+
+// Animated Floating Icon Component
+const FloatingIcon = ({ 
+  emoji, 
+  size, 
+  top, 
+  left, 
+  right,
+  bottom,
+  delay = 0 
+}: { 
+  emoji: string; 
+  size: number; 
+  top?: number; 
+  left?: number;
+  right?: number;
+  bottom?: number;
+  delay?: number;
+}) => {
+  const opacity = useRef(new Animated.Value(0.1)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 2000,
+          delay,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, []);
+
+  return (
+    <Animated.Text
+      style={{
+        position: "absolute",
+        top,
+        left,
+        right,
+        bottom,
+        fontSize: size,
+        opacity,
+      }}
+    >
+      {emoji}
+    </Animated.Text>
+  );
+};
 
 // Feature Card Component
 const FeatureCard = ({
@@ -186,10 +245,19 @@ export default function AboutScreen() {
 
   return (
     <LinearGradient
-      colors={["#0f172a", "#1e1b4b", "#312e81", "#1e1b4b", "#0f172a"]}
-      locations={[0, 0.25, 0.5, 0.75, 1]}
+      colors={["#0f172a", "#312e81", "#1e1b4b"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={{ flex: 1 }}
     >
+      {/* Background Icons */}
+      <View style={{ position: "absolute", width: "100%", height: "100%" }} pointerEvents="none">
+        <FloatingIcon emoji="ℹ️" size={48} top={80} left={-10} delay={0} />
+        <FloatingIcon emoji="📚" size={36} top={200} right={10} delay={1000} />
+        <FloatingIcon emoji="🎓" size={40} bottom={200} left={20} delay={2000} />
+        <FloatingIcon emoji="💡" size={36} bottom={100} right={-5} delay={1500} />
+      </View>
+
       {/* Header - Fixed */}
       <View
         style={{

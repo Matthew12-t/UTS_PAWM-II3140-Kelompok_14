@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   View, 
   Text, 
@@ -7,10 +7,71 @@ import {
   Alert,
   Switch,
   Image,
+  Animated,
+  Easing,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase, getCurrentUser, signOut } from "../../lib/supabase";
+
+// Animated Floating Icon Component
+const FloatingIcon = ({ 
+  emoji, 
+  size, 
+  top, 
+  left, 
+  right,
+  bottom,
+  delay = 0 
+}: { 
+  emoji: string; 
+  size: number; 
+  top?: number; 
+  left?: number;
+  right?: number;
+  bottom?: number;
+  delay?: number;
+}) => {
+  const opacity = useRef(new Animated.Value(0.1)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 2000,
+          delay,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, []);
+
+  return (
+    <Animated.Text
+      style={{
+        position: "absolute",
+        top,
+        left,
+        right,
+        bottom,
+        fontSize: size,
+        opacity,
+      }}
+    >
+      {emoji}
+    </Animated.Text>
+  );
+};
 
 // Settings Item Component
 const SettingsItem = ({ 
@@ -171,6 +232,14 @@ export default function SettingsScreen() {
       end={{ x: 1, y: 1 }}
       style={{ flex: 1 }}
     >
+      {/* Background Icons */}
+      <View style={{ position: "absolute", width: "100%", height: "100%" }} pointerEvents="none">
+        <FloatingIcon emoji="⚙️" size={48} top={80} left={-10} delay={0} />
+        <FloatingIcon emoji="🔧" size={36} top={200} right={10} delay={1000} />
+        <FloatingIcon emoji="🛠️" size={40} bottom={200} left={20} delay={2000} />
+        <FloatingIcon emoji="👤" size={36} bottom={100} right={-5} delay={1500} />
+      </View>
+
       {/* Header - Fixed */}
       <View style={{
         backgroundColor: "rgba(255,255,255,0.1)",

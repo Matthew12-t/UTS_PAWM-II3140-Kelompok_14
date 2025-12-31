@@ -94,29 +94,68 @@ export default function TopicView({ pathway, user, onComplete, onBack }: TopicVi
           padding: 20,
           marginBottom: 20,
         }}>
-          <Text style={{ color: "white", fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
-            🎬 Video Pembelajaran
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+            <Image
+              source={require("../../assets/images/play.png")}
+              style={{ width: 24, height: 24, marginRight: 8 }}
+              resizeMode="contain"
+            />
+            <Text style={{ color: "white", fontSize: 18, fontWeight: "600" }}>
+              Video Pembelajaran
+            </Text>
+          </View>
           
+          {/* YouTube Video Thumbnail */}
           <TouchableOpacity 
             onPress={openVideo}
             style={{
-              backgroundColor: "#dc2626",
               borderRadius: 12,
-              padding: 16,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
+              overflow: "hidden",
+              position: "relative",
             }}
           >
-            <Text style={{ fontSize: 24, marginRight: 12 }}>▶️</Text>
-            <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
-              Tonton di YouTube
-            </Text>
+            <Image
+              source={{ uri: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }}
+              style={{ width: "100%", height: 180 }}
+              resizeMode="cover"
+            />
+            {/* Play Button Overlay */}
+            <View style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.3)",
+              justifyContent: "center",
+              alignItems: "center",
+            }}>
+              <View style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: "#dc2626",
+                justifyContent: "center",
+                alignItems: "center",
+              }}>
+                {/* Triangle Play Icon */}
+                <View style={{
+                  width: 0,
+                  height: 0,
+                  marginLeft: 4,
+                  borderLeftWidth: 20,
+                  borderLeftColor: "white",
+                  borderTopWidth: 12,
+                  borderTopColor: "transparent",
+                  borderBottomWidth: 12,
+                  borderBottomColor: "transparent",
+                }} />
+              </View>
+            </View>
           </TouchableOpacity>
           
           <Text style={{ color: "#a5b4fc", fontSize: 12, textAlign: "center", marginTop: 12 }}>
-            Video akan dibuka di aplikasi YouTube
+            Tap untuk menonton di YouTube
           </Text>
         </View>
 
@@ -147,16 +186,23 @@ export default function TopicView({ pathway, user, onComplete, onBack }: TopicVi
             padding: 20,
             marginBottom: 20,
           }}>
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
-              📊 Perbandingan Ikatan Kimia
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+              <Image
+                source={require("../../assets/images/hasil.png")}
+                style={{ width: 24, height: 24, marginRight: 8 }}
+                resizeMode="contain"
+              />
+              <Text style={{ color: "white", fontSize: 18, fontWeight: "600" }}>
+                Perbandingan Ikatan Kimia
+              </Text>
+            </View>
             <View style={{
               backgroundColor: "white",
               borderRadius: 12,
               overflow: "hidden",
             }}>
               <Image
-                source={{ uri: "https://i.imgur.com/JNVZdcL.png" }}
+                source={require("../../assets/images/perbandingan.jpg")}
                 style={{ width: "100%", height: 200 }}
                 resizeMode="contain"
               />

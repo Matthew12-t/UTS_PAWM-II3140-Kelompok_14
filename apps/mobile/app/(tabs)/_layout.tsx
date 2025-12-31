@@ -100,9 +100,9 @@ export default function TabLayout() {
     <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
+          title: "Beranda",
           tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="dashboard" label="Dashboard" focused={focused} />
+            <TabIcon iconName="dashboard" label="Beranda" focused={focused} />
           ),
         }}
     />
@@ -118,18 +118,18 @@ export default function TabLayout() {
     <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: "Pengaturan",
           tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="settings" label="Settings" focused={focused} />
+            <TabIcon iconName="settings" label="Pengaturan" focused={focused} />
           ),
         }}
     />
     <Tabs.Screen
         name="about"
         options={{
-          title: "About",
+          title: "Informasi",
           tabBarIcon: ({ focused }) => (
-            <TabIcon iconName="about" label="About" focused={focused} />
+            <TabIcon iconName="about" label="Informasi" focused={focused} />
           ),
         }}
     />

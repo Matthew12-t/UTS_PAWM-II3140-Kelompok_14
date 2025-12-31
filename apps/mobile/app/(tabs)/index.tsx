@@ -377,7 +377,7 @@ export default function DashboardScreen() {
             }} />
             <View>
               <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
-                Chemical Bonding
+                Ikatan Kimia
               </Text>
               <Text style={{ fontSize: 13, color: "#a5b4fc" }}>
                 Pembelajaran interaktif ikatan kimia
