@@ -8,6 +8,7 @@ import {
   Animated,
   Easing,
   AppState,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
@@ -287,7 +288,7 @@ export default function DashboardScreen() {
         <FloatingIcon emoji="⚗️" size={36} bottom={100} right={-5} delay={1500} />
       </View>
 
-      {/* Header */}
+      {/* Header - Fixed */}
       <View style={{
         backgroundColor: "rgba(255,255,255,0.1)",
         paddingTop: 50,
@@ -295,9 +296,17 @@ export default function DashboardScreen() {
         paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: "rgba(255,255,255,0.1)",
+        height: 110,
       }}>
-        <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>📖 ChemLab</Text>
-        <Text style={{ fontSize: 13, color: "#a5b4fc" }}>Virtual Chemistry Laboratory</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Image 
+            source={require("../../assets/images/chemlab.png")} 
+            style={{ width: 32, height: 32 }} 
+            resizeMode="contain"
+          />
+          <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>ChemLab</Text>
+        </View>
+        <Text style={{ fontSize: 13, color: "#a5b4fc", marginTop: 4 }}>Virtual Chemistry Laboratory</Text>
       </View>
 
       <ScrollView 

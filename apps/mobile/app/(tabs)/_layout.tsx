@@ -1,14 +1,22 @@
 import { Tabs } from "expo-router";
-import { View, Text, Platform } from "react-native";
+import { View, Text, Platform, Image, ImageSourcePropType } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+
+// Tab icon images
+const tabIcons: { [key: string]: ImageSourcePropType } = {
+  dashboard: require("../../assets/images/dashboard.png"),
+  hasil: require("../../assets/images/hasil.png"),
+  settings: require("../../assets/images/settings.png"),
+  about: require("../../assets/images/about.png"),
+};
 
 // Custom Tab Bar Icon Component
 const TabIcon = ({ 
-  emoji, 
+  iconName, 
   label, 
   focused 
 }: { 
-  emoji: string; 
+  iconName: string; 
   label: string; 
   focused: boolean;
 }) => {
@@ -35,7 +43,11 @@ const TabIcon = ({
             elevation: 8,
           }}
         >
-          <Text style={{ fontSize: 24 }}>{emoji}</Text>
+          <Image 
+            source={tabIcons[iconName]} 
+            style={{ width: 28, height: 28 }} 
+            resizeMode="contain"
+          />
         </LinearGradient>
         <Text style={{ 
           color: "#a5b4fc", 
@@ -52,7 +64,11 @@ const TabIcon = ({
 
   return (
     <View style={{ alignItems: "center", justifyContent: "center", minWidth: 70 }}>
-      <Text style={{ fontSize: 20, opacity: 0.6 }}>{emoji}</Text>
+      <Image 
+        source={tabIcons[iconName]} 
+        style={{ width: 24, height: 24, opacity: 0.6 }} 
+        resizeMode="contain"
+      />
       <Text style={{ 
         color: "#9ca3af", 
         fontSize: 9, 
@@ -86,7 +102,7 @@ export default function TabLayout() {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="📖" label="Dashboard" focused={focused} />
+            <TabIcon iconName="dashboard" label="Dashboard" focused={focused} />
           ),
         }}
     />
@@ -95,7 +111,7 @@ export default function TabLayout() {
         options={{
           title: "Hasil",
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="📊" label="Hasil" focused={focused} />
+            <TabIcon iconName="hasil" label="Hasil" focused={focused} />
           ),
         }}
     />
@@ -104,7 +120,7 @@ export default function TabLayout() {
         options={{
           title: "Settings",
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="⚙️" label="Settings" focused={focused} />
+            <TabIcon iconName="settings" label="Settings" focused={focused} />
           ),
         }}
     />
@@ -113,7 +129,7 @@ export default function TabLayout() {
         options={{
           title: "About",
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="ℹ️" label="About" focused={focused} />
+            <TabIcon iconName="about" label="About" focused={focused} />
           ),
         }}
     />

@@ -9,6 +9,7 @@ import {
   Easing,
   Modal,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -370,7 +371,7 @@ export default function ResultsScreen() {
         <FloatingIcon emoji="📝" size={36} bottom={100} right={-5} delay={1500} />
       </View>
 
-      {/* Header */}
+      {/* Header - Fixed */}
       <View style={{
         backgroundColor: "rgba(255,255,255,0.1)",
         paddingTop: 50,
@@ -378,9 +379,17 @@ export default function ResultsScreen() {
         paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: "rgba(255,255,255,0.1)",
+        height: 110,
       }}>
-        <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>📊 Hasil Pembelajaran</Text>
-        <Text style={{ fontSize: 13, color: "#a5b4fc" }}>Pantau progress dan nilai Anda</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Image 
+            source={require("../../assets/images/hasil.png")} 
+            style={{ width: 32, height: 32 }} 
+            resizeMode="contain"
+          />
+          <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>Hasil Pembelajaran</Text>
+        </View>
+        <Text style={{ fontSize: 13, color: "#a5b4fc", marginTop: 4 }}>Pantau progress dan nilai Anda</Text>
       </View>
 
       <ScrollView 

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, Linking } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, Linking, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -190,31 +190,37 @@ export default function AboutScreen() {
       locations={[0, 0.25, 0.5, 0.75, 1]}
       style={{ flex: 1 }}
     >
+      {/* Header - Fixed */}
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingTop: 50,
+          paddingBottom: 16,
+          backgroundColor: "rgba(255,255,255,0.05)",
+          borderBottomWidth: 1,
+          borderBottomColor: "rgba(255,255,255,0.1)",
+          height: 110,
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Image 
+            source={require("../../assets/images/about.png")} 
+            style={{ width: 32, height: 32 }} 
+            resizeMode="contain"
+          />
+          <Text style={{ color: "white", fontSize: 28, fontWeight: "bold" }}>
+            About ChemLab
+          </Text>
+        </View>
+        <Text style={{ color: "#a5b4fc", fontSize: 13, marginTop: 4 }}>
+          Virtual Chemistry Laboratory
+        </Text>
+      </View>
+
       <ScrollView
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View
-          style={{
-            paddingHorizontal: 20,
-            paddingTop: 50,
-            paddingBottom: 20,
-            backgroundColor: "rgba(255,255,255,0.05)",
-            borderBottomWidth: 1,
-            borderBottomColor: "rgba(255,255,255,0.1)",
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Text style={{ fontSize: 28 }}>ℹ️</Text>
-            <Text style={{ color: "white", fontSize: 22, fontWeight: "bold" }}>
-              About ChemLab
-            </Text>
-          </View>
-          <Text style={{ color: "#a5b4fc", fontSize: 13, marginTop: 4 }}>
-            Virtual Chemistry Laboratory
-          </Text>
-        </View>
 
         {/* About Section */}
         <View style={{ paddingHorizontal: 20, paddingVertical: 30 }}>

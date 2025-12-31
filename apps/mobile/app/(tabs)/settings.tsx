@@ -6,6 +6,7 @@ import {
   TouchableOpacity, 
   Alert,
   Switch,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -170,7 +171,7 @@ export default function SettingsScreen() {
       end={{ x: 1, y: 1 }}
       style={{ flex: 1 }}
     >
-      {/* Header */}
+      {/* Header - Fixed */}
       <View style={{
         backgroundColor: "rgba(255,255,255,0.1)",
         paddingTop: 50,
@@ -178,9 +179,17 @@ export default function SettingsScreen() {
         paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: "rgba(255,255,255,0.1)",
+        height: 110,
       }}>
-        <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>⚙️ Pengaturan</Text>
-        <Text style={{ fontSize: 13, color: "#a5b4fc" }}>Kelola akun dan preferensi Anda</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Image 
+            source={require("../../assets/images/settings.png")} 
+            style={{ width: 32, height: 32 }} 
+            resizeMode="contain"
+          />
+          <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>Pengaturan</Text>
+        </View>
+        <Text style={{ fontSize: 13, color: "#a5b4fc", marginTop: 4 }}>Kelola akun dan preferensi Anda</Text>
       </View>
 
       <ScrollView 
