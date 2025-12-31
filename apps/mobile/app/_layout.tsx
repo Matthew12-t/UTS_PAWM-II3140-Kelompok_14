@@ -5,6 +5,8 @@ import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
 import CustomSplashScreen from "../components/SplashScreen";
 import { supabase } from "../lib/supabase";
+import { AudioProvider } from "../lib/AudioContext";
+import { ThemeProvider } from "../lib/ThemeContext";
 import "../global.css";
 
 // Prevent the native splash from auto-hiding until we decide
@@ -85,22 +87,26 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="login" />
-        <Stack.Screen name="signup" />
-        <Stack.Screen name="auth/callback" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen 
-          name="pathway/[id]" 
-          options={{ 
-            headerShown: false,
-            presentation: "modal",
-            animation: "slide_from_right"
-          }} 
-        />
-      </Stack>
-    </View>
+    <ThemeProvider>
+      <AudioProvider>
+        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="login" />
+            <Stack.Screen name="signup" />
+            <Stack.Screen name="auth/callback" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen 
+              name="pathway/[id]" 
+              options={{ 
+                headerShown: false,
+                presentation: "modal",
+                animation: "slide_from_right"
+              }} 
+            />
+          </Stack>
+        </View>
+      </AudioProvider>
+    </ThemeProvider>
   );
 }

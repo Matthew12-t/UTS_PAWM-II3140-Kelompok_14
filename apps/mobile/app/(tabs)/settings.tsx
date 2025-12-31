@@ -17,6 +17,7 @@ import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase, getCurrentUser, signOut } from "../../lib/supabase";
 import { useTheme, ThemeColors } from "../../lib/ThemeContext";
+import { useAudio } from "../../lib/AudioContext";
 
 // Animated Floating Icon Component
 const FloatingIcon = ({ 
@@ -169,6 +170,7 @@ const SettingsSection = ({
 
 export default function SettingsScreen() {
   const { isDarkMode, theme, setDarkMode } = useTheme();
+  const { isMuted, setMusicEnabled } = useAudio();
   const [user, setUser] = useState<any>(null);
   const [notifications, setNotifications] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -469,6 +471,20 @@ export default function SettingsScreen() {
 
         {/* Preferences */}
         <SettingsSection title="Preferensi" theme={theme}>
+          <SettingsItem
+            icon="🎵"
+            title="Musik Latar"
+            subtitle={isMuted ? "Mati" : "Nyala"}
+            theme={theme}
+            rightElement={
+              <Switch
+                value={!isMuted}
+                onValueChange={(value) => setMusicEnabled(value)}
+                trackColor={{ false: "#374151", true: "#6366f1" }}
+                thumbColor="white"
+              />
+            }
+          />
           <SettingsItem
             icon="🔔"
             title="Notifikasi"
