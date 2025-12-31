@@ -201,40 +201,59 @@ const PathwayPreviewCard = ({
   </View>
 );
 
+// Photo placeholders mapping
+const teamPhotos: { [key: string]: any } = {
+  matthew: require("../../assets/images/matthew.png"),
+  darryl: require("../../assets/images/darryl.png"),
+};
+
 // Team Member Card
 const TeamMemberCard = ({
   name,
   nim,
+  photoKey,
 }: {
   name: string;
   nim: string;
+  photoKey: string;
 }) => (
   <View
     style={{
       backgroundColor: "rgba(255, 255, 255, 0.1)",
       borderRadius: 16,
       padding: 20,
-      marginBottom: 12,
       borderWidth: 1,
       borderColor: "rgba(255, 255, 255, 0.2)",
       alignItems: "center",
+      minHeight: 180,
     }}
   >
     <View style={{
-      width: 60,
-      height: 60,
-      borderRadius: 30,
+      width: 70,
+      height: 70,
+      borderRadius: 35,
       backgroundColor: "#6366f1",
       alignItems: "center",
       justifyContent: "center",
       marginBottom: 12,
+      overflow: "hidden",
     }}>
-      <Text style={{ fontSize: 24 }}>👨‍💻</Text>
+      <Image
+        source={teamPhotos[photoKey]}
+        style={{ width: 70, height: 70 }}
+        resizeMode="cover"
+      />
     </View>
-    <Text style={{ color: "white", fontSize: 16, fontWeight: "bold", marginBottom: 4 }}>
+    <Text style={{ 
+      color: "white", 
+      fontSize: 14, 
+      fontWeight: "bold", 
+      marginBottom: 4,
+      textAlign: "center",
+    }}>
       {name}
     </Text>
-    <Text style={{ color: "rgba(199, 210, 254, 0.6)", fontSize: 12 }}>
+    <Text style={{ color: "rgba(199, 210, 254, 0.6)", fontSize: 11, textAlign: "center" }}>
       NIM: {nim}
     </Text>
   </View>
@@ -472,16 +491,18 @@ export default function AboutScreen() {
             {/* Developer 1 (Kiri) */}
             <View style={{ flex: 1 }}>
               <TeamMemberCard
-                name="Matthew"
+                name="Matthew Sebastian K"
                 nim="18223096"
+                photoKey="matthew"
               />
             </View>
 
             {/* Developer 2 (Kanan) */}
             <View style={{ flex: 1 }}>
               <TeamMemberCard
-                name="Darryl Rayhananta" 
-                nim="18223xxx"
+                name="Darryl Rayhananta Adenan" 
+                nim="18223042"
+                photoKey="darryl"
               />
             </View>
 
@@ -507,7 +528,11 @@ export default function AboutScreen() {
               marginBottom: 16,
             }}
           >
-            <Text style={{ fontSize: 24 }}>⚛️</Text>
+            <Image 
+              source={require("../../assets/images/chemlab.png")} 
+              style={{ width: 28, height: 28 }} 
+              resizeMode="contain"
+            />
             <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
               ChemLab
             </Text>
@@ -519,7 +544,7 @@ export default function AboutScreen() {
               textAlign: "center",
             }}
           >
-            © 2024 ChemLab Virtual Laboratory.{"\n"}
+            © 2025 ChemLab Virtual Laboratory.{"\n"}
             Tugas PAWM - Institut Teknologi Bandung
           </Text>
         </View>

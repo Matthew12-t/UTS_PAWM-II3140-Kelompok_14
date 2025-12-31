@@ -290,13 +290,14 @@ export default function FinalTestView({
   // Pre-test screen
   if (!testStarted) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
         <View style={{
           backgroundColor: "rgba(255,255,255,0.1)",
           borderRadius: 20,
-          padding: 32,
+          padding: 24,
           alignItems: "center",
-          maxWidth: 400,
+          width: "100%",
+          maxWidth: 340,
         }}>
           <Text style={{ fontSize: 60, marginBottom: 16 }}>📝</Text>
           <Text style={{ 
@@ -309,42 +310,44 @@ export default function FinalTestView({
             Tes Final
           </Text>
           <Text style={{ 
-            fontSize: 16, 
+            fontSize: 14, 
             color: "#a5b4fc",
             textAlign: "center",
-            marginBottom: 24
+            marginBottom: 20
           }}>
-            {pathway.title}
+            Tes Akhir
           </Text>
 
           <View style={{
-            backgroundColor: "rgba(255,255,255,0.05)",
+            backgroundColor: "rgba(255,255,255,0.08)",
             borderRadius: 12,
             padding: 16,
             width: "100%",
-            marginBottom: 24,
+            marginBottom: 20,
           }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-              <Text style={{ color: "#9ca3af" }}>Jumlah Soal</Text>
-              <Text style={{ color: "white", fontWeight: "600" }}>{questions.length} soal</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+              <Text style={{ color: "#9ca3af", fontSize: 14 }}>Jumlah Soal</Text>
+              <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>{questions.length} soal</Text>
             </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-              <Text style={{ color: "#9ca3af" }}>Waktu</Text>
-              <Text style={{ color: "white", fontWeight: "600" }}>10 menit</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+              <Text style={{ color: "#9ca3af", fontSize: 14 }}>Waktu</Text>
+              <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>10 menit</Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-              <Text style={{ color: "#9ca3af" }}>Passing Grade</Text>
-              <Text style={{ color: "#22c55e", fontWeight: "600" }}>70%</Text>
+              <Text style={{ color: "#9ca3af", fontSize: 14 }}>Passing Grade</Text>
+              <Text style={{ color: "#22c55e", fontWeight: "600", fontSize: 14 }}>70%</Text>
             </View>
           </View>
 
           <Text style={{ 
-            fontSize: 13, 
+            fontSize: 12, 
             color: "#f59e0b",
             textAlign: "center",
-            marginBottom: 24
+            marginBottom: 20,
+            lineHeight: 18,
+            paddingHorizontal: 8,
           }}>
-            ⚠️ Setelah dimulai, tes tidak dapat dijeda. Pastikan Anda siap sebelum memulai.
+            ⚠️ Setelah dimulai, tes tidak dapat dijeda.{"\n"}Pastikan Anda siap sebelum memulai.
           </Text>
 
           <TouchableOpacity
@@ -357,7 +360,7 @@ export default function FinalTestView({
               end={{ x: 1, y: 0 }}
               style={{
                 borderRadius: 12,
-                paddingVertical: 16,
+                paddingVertical: 14,
                 alignItems: "center",
               }}
             >
@@ -371,7 +374,7 @@ export default function FinalTestView({
             onPress={onBack}
             style={{ marginTop: 16 }}
           >
-            <Text style={{ color: "#a5b4fc" }}>Kembali</Text>
+            <Text style={{ color: "#a5b4fc", fontSize: 14 }}>Kembali</Text>
           </TouchableOpacity>
         </View>
       </View>
