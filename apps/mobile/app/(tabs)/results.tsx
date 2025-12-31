@@ -246,23 +246,35 @@ export default function ResultsScreen() {
         .eq("user_id", user.id)
         .order("created_at", { ascending: true });
 
-      if (pathwayData && answersData) {
-        const questions = pathwayData.content?.questions || [];
-        const formattedAnswers = answersData.map((answer: any) => {
+      if (answersData) {
+        const questions = pathwayData?.content?.questions || [];
+        const formattedAnswers = answersData.map((answer: any, idx: number) => {
           const question = questions.find((q: any) => q.id === answer.question_id);
+          
+          // Extract question text from explanation if question not found in content
+          let questionText = question?.question || "Pertanyaan tidak ditemukan";
+          let options = question?.options || [];
+          
+          // If no question found in pathway content, use answer data
+          // The explanation contains the answer details
+          if (!question && answer.explanation) {
+            questionText = `Pertanyaan ${idx + 1}`;
+          }
+          
           return {
             question_id: answer.question_id,
             user_answer: answer.user_answer,
             correct_answer: answer.correct_answer,
             is_correct: answer.is_correct,
             explanation: answer.explanation,
-            question_text: question?.question || "Pertanyaan tidak ditemukan",
-            options: question?.options || [],
+            question_text: questionText,
+            options: options,
           };
         });
 
         // Get only the latest attempt (last N questions)
-        const questionsPerAttempt = questions.length;
+        // For final test, use all answers if no questions in pathway content
+        const questionsPerAttempt = questions.length > 0 ? questions.length : formattedAnswers.length;
         const latestAttempt = formattedAnswers.slice(-questionsPerAttempt);
         setQuizAnswers(latestAttempt);
       }

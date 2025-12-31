@@ -22,6 +22,7 @@ interface Question {
   question: string;
   options: string[];
   correct_answer: number;
+  explanation?: string;
 }
 
 export default function FinalTestView({
@@ -31,7 +32,6 @@ export default function FinalTestView({
   onBack,
 }: FinalTestViewProps) {
   const [loading, setLoading] = useState(true);
-  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
@@ -39,8 +39,12 @@ export default function FinalTestView({
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
   const [testStarted, setTestStarted] = useState(false);
 
+  // Get questions from pathway.content (same as quiz system)
+  const questions: Question[] = pathway.content?.questions || [];
+
   useEffect(() => {
-    loadQuestions();
+    // Questions are loaded from pathway.content, just set loading to false
+    setLoading(false);
   }, []);
 
   // Timer effect
@@ -60,133 +64,6 @@ export default function FinalTestView({
 
     return () => clearInterval(timer);
   }, [testStarted, showResults]);
-
-  const loadQuestions = async () => {
-    try {
-      // Get final test questions from pathway content or generate sample questions
-      const content = pathway.content;
-      
-      // Sample final test questions about chemical bonding
-      const finalTestQuestions: Question[] = [
-        {
-          id: 1,
-          question: "Ikatan kovalen terbentuk ketika...",
-          options: [
-            "Elektron berpindah dari satu atom ke atom lain",
-            "Dua atom berbagi pasangan elektron",
-            "Elektron bebas bergerak di antara atom-atom",
-            "Ion positif dan negatif saling tarik menarik"
-          ],
-          correct_answer: 1
-        },
-        {
-          id: 2,
-          question: "Senyawa NaCl memiliki jenis ikatan...",
-          options: [
-            "Ikatan kovalen polar",
-            "Ikatan kovalen non-polar", 
-            "Ikatan ionik",
-            "Ikatan logam"
-          ],
-          correct_answer: 2
-        },
-        {
-          id: 3,
-          question: "Atom yang cenderung membentuk ikatan ionik adalah...",
-          options: [
-            "Dua atom non-logam",
-            "Atom logam dengan atom non-logam",
-            "Dua atom logam",
-            "Atom dengan keelektronegatifan yang sama"
-          ],
-          correct_answer: 1
-        },
-        {
-          id: 4,
-          question: "Ikatan hidrogen termasuk dalam jenis...",
-          options: [
-            "Ikatan primer",
-            "Ikatan sekunder/antarmolekul",
-            "Ikatan ionik",
-            "Ikatan kovalen"
-          ],
-          correct_answer: 1
-        },
-        {
-          id: 5,
-          question: "Molekul H2O memiliki bentuk...",
-          options: [
-            "Linear",
-            "Trigonal planar",
-            "Tetrahedral",
-            "Bengkok (bent)"
-          ],
-          correct_answer: 3
-        },
-        {
-          id: 6,
-          question: "Gaya Van der Waals adalah gaya...",
-          options: [
-            "Antar ion",
-            "Antar molekul yang lemah",
-            "Dalam inti atom",
-            "Antara proton dan elektron"
-          ],
-          correct_answer: 1
-        },
-        {
-          id: 7,
-          question: "Ikatan rangkap dua (double bond) terdiri dari...",
-          options: [
-            "Satu ikatan sigma",
-            "Dua ikatan sigma",
-            "Satu ikatan sigma dan satu ikatan pi",
-            "Dua ikatan pi"
-          ],
-          correct_answer: 2
-        },
-        {
-          id: 8,
-          question: "Senyawa dengan ikatan kovalen polar akan...",
-          options: [
-            "Selalu larut dalam air",
-            "Memiliki momen dipol",
-            "Selalu berwujud gas",
-            "Tidak dapat menghantarkan listrik"
-          ],
-          correct_answer: 1
-        },
-        {
-          id: 9,
-          question: "Keelektronegatifan adalah...",
-          options: [
-            "Kemampuan atom melepas elektron",
-            "Kemampuan atom menarik elektron dalam ikatan",
-            "Jumlah elektron valensi",
-            "Energi yang diperlukan untuk menghilangkan elektron"
-          ],
-          correct_answer: 1
-        },
-        {
-          id: 10,
-          question: "Hibridisasi sp3 menghasilkan bentuk molekul...",
-          options: [
-            "Linear",
-            "Trigonal planar",
-            "Tetrahedral",
-            "Oktahedral"
-          ],
-          correct_answer: 2
-        }
-      ];
-
-      setQuestions(finalTestQuestions);
-    } catch (error) {
-      console.error("Error loading questions:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -228,14 +105,35 @@ export default function FinalTestView({
 
     // Save to database
     try {
-      // Save detailed results
-      await supabase.from("final_test_results").upsert({
-        user_id: userId,
-        pathway_id: pathway.id,
-        score: calculatedScore,
-        answers: answers,
-        completed_at: new Date().toISOString(),
-      });
+      // Save answers to quiz_answers table (for pembahasan in results page)
+      for (let index = 0; index < questions.length; index++) {
+        const q = questions[index];
+        const userAnswer = answers[index];
+        const isCorrect = userAnswer === q.correct_answer;
+        
+        const explanation = isCorrect
+          ? `✓ Jawaban Anda benar!\n\n${q.explanation || "Selamat, jawaban Anda tepat!"}`
+          : `✗ Jawaban Anda salah.\n\nJawaban yang benar adalah: ${q.options[q.correct_answer]}\n\n${q.explanation || "Silakan pelajari kembali materi ini."}`;
+
+        // Delete existing answer first
+        await supabase
+          .from("quiz_answers")
+          .delete()
+          .eq("pathway_id", pathway.id)
+          .eq("user_id", userId)
+          .eq("question_id", q.id);
+
+        // Insert new answer
+        await supabase.from("quiz_answers").insert({
+          user_id: userId,
+          pathway_id: pathway.id,
+          question_id: q.id,
+          user_answer: userAnswer ?? -1,
+          correct_answer: q.correct_answer,
+          is_correct: isCorrect,
+          explanation: explanation,
+        });
+      }
 
       // Update user_pathway_progress with score (same as quiz)
       await supabase
@@ -247,7 +145,7 @@ export default function FinalTestView({
       console.error("Error saving results:", error);
     }
 
-    onComplete(calculatedScore);
+    // Don't call onComplete here - let user click button to go back
   };
 
   const confirmSubmit = () => {
@@ -384,14 +282,21 @@ export default function FinalTestView({
   // Results screen
   if (showResults) {
     const passed = score >= 70;
+    const correctCount = questions.filter((q: Question, index: number) => answers[index] === q.correct_answer).length;
+    
+    const handleGoToDashboard = () => {
+      onComplete(score);
+    };
     
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+        {/* Score Card */}
         <View style={{
           backgroundColor: "rgba(255,255,255,0.1)",
           borderRadius: 20,
           padding: 32,
           alignItems: "center",
+          width: "100%",
           maxWidth: 400,
         }}>
           <Text style={{ fontSize: 60, marginBottom: 16 }}>
@@ -441,12 +346,12 @@ export default function FinalTestView({
             borderRadius: 12,
             padding: 16,
             width: "100%",
-            marginBottom: 24,
+            marginBottom: 16,
           }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
               <Text style={{ color: "#9ca3af" }}>Jawaban Benar</Text>
               <Text style={{ color: "#22c55e", fontWeight: "600" }}>
-                {Math.round((score / 100) * questions.length)} / {questions.length}
+                {correctCount} / {questions.length}
               </Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -460,8 +365,20 @@ export default function FinalTestView({
             </View>
           </View>
 
+          {/* Info text */}
+          <Text style={{ 
+            color: "#9ca3af", 
+            fontSize: 13, 
+            textAlign: "center",
+            marginBottom: 24,
+            lineHeight: 20
+          }}>
+            💡 Lihat pembahasan lengkap di halaman{"\n"}"Hasil Pembelajaran"
+          </Text>
+
+          {/* Action Button */}
           <TouchableOpacity
-            onPress={onBack}
+            onPress={handleGoToDashboard}
             style={{ width: "100%" }}
           >
             <LinearGradient

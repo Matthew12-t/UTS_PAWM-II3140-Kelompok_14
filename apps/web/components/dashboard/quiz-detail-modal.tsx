@@ -47,24 +47,30 @@ export function QuizDetailModal({ isOpen, onClose, pathwayId, user, pathwayTitle
         .eq("user_id", user.id)
         .order("created_at", { ascending: true })
 
-      if (pathwayData && answersData) {
-        const questions = pathwayData.content?.questions || []
-        const formattedAnswers = answersData.map((answer: any) => {
+      if (answersData) {
+        const questions = pathwayData?.content?.questions || []
+        const formattedAnswers = answersData.map((answer: any, idx: number) => {
           const question = questions.find((q: any) => q.id === answer.question_id)
+          
+          // If no question found in pathway content, use generic question text
+          let questionText = question?.question || `Pertanyaan ${idx + 1}`
+          let options = question?.options || []
+          
           return {
             question_id: answer.question_id,
             user_answer: answer.user_answer,
             correct_answer: answer.correct_answer,
             is_correct: answer.is_correct,
             explanation: answer.explanation,
-            question_text: question?.question || "Pertanyaan tidak ditemukan",
-            options: question?.options || [],
+            question_text: questionText,
+            options: options,
             created_at: answer.created_at
           }
         })
 
         const grouped: QuizAnswer[][] = []
-        const questionsPerAttempt = questions.length
+        // For final test, use all answers if no questions in pathway content
+        const questionsPerAttempt = questions.length > 0 ? questions.length : formattedAnswers.length
         
         for (let i = 0; i < formattedAnswers.length; i += questionsPerAttempt) {
           grouped.push(formattedAnswers.slice(i, i + questionsPerAttempt))

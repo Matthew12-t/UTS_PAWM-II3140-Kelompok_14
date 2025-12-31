@@ -29,6 +29,7 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
   const router = useRouter()
   const supabase = createClient()
 
+  // Get questions from pathway.content (same as quiz system)
   const questions = pathway.content?.questions || []
 
   const handleAnswer = (optionIndex: number) => {
@@ -65,6 +66,12 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
       const question = questions[i]
       const userAnswer = answers[i]
       const isCorrect = userAnswer === question.correct_answer
+      
+      // Create explanation with correct/wrong feedback (use question.explanation from database)
+      const baseExplanation = question.explanation || "Silakan pelajari kembali materi terkait."
+      const explanation = isCorrect
+        ? `✓ Jawaban Anda benar!\n\n${baseExplanation}`
+        : `✗ Jawaban Anda salah.\n\nJawaban yang benar adalah: ${question.options[question.correct_answer]}\n\n${baseExplanation}`
 
       await supabase
         .from("quiz_answers")
@@ -79,10 +86,10 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
           pathway_id: pathway.id,
           user_id: user.id,
           question_id: question.id,
-          user_answer: userAnswer,
+          user_answer: userAnswer ?? -1,
           correct_answer: question.correct_answer,
           is_correct: isCorrect,
-          explanation: question.explanation || ""
+          explanation: explanation
         })
     }
 
@@ -152,22 +159,20 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
                     ? "Bagus! Anda sudah memahami sebagian besar materi. Pelajari kembali bagian yang kurang."
                     : "Anda perlu mempelajari kembali materi Chemical Bonding."}
               </p>
+              <p className="text-sm text-indigo-600 mt-4">
+                💡 Lihat pembahasan lengkap di halaman &quot;Hasil Pembelajaran&quot;
+              </p>
             </div>
           </Card>
         </header>
 
         <nav>
-          <Link href="/dashboard" className="block mb-4">
-            <Button variant="outline" className="w-full bg-transparent">
-              Kembali
-            </Button>
-          </Link>
           <Button 
             className="w-full bg-indigo-600 hover:bg-indigo-700"
             onClick={handleComplete}
             disabled={isCompleting}
           >
-            {isCompleting ? 'Menyimpan...' : 'Selesai'}
+            {isCompleting ? 'Menyimpan...' : 'Kembali ke Dashboard'}
           </Button>
         </nav>
       </article>

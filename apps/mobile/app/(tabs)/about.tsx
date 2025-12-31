@@ -493,7 +493,7 @@ export default function AboutScreen() {
             {/* Developer 1 (Kiri) */}
             <View style={{ flex: 1 }}>
               <TeamMemberCard
-                name="Matthew Sebastian K"
+                name="Matthew Sebastian Kurniawan"
                 nim="18223096"
                 photoKey="matthew"
               />

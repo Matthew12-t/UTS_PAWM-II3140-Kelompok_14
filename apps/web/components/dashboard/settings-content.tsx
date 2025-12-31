@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import type { User } from "@supabase/supabase-js"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,12 +9,53 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 export default function SettingsContent({ user }: { user: User }) {
+  const [isResetting, setIsResetting] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push("/")
+  }
+
+  const handleResetProgress = async () => {
+    if (!confirm("Apakah Anda yakin ingin mereset semua progress pembelajaran? Tindakan ini tidak dapat dibatalkan.")) {
+      return
+    }
+
+    setIsResetting(true)
+    try {
+      // Delete quiz answers (includes final test answers now)
+      const { error: quizError } = await supabase
+        .from("quiz_answers")
+        .delete()
+        .eq("user_id", user.id)
+
+      if (quizError) {
+        console.error("Error deleting quiz answers:", quizError)
+      }
+
+      // Delete user pathway progress
+      const { error: progressError } = await supabase
+        .from("user_pathway_progress")
+        .delete()
+        .eq("user_id", user.id)
+
+      if (progressError) {
+        console.error("Error deleting progress:", progressError)
+        alert("Gagal mereset progress: " + progressError.message)
+        return
+      }
+
+      alert("Semua progress pembelajaran telah direset.")
+      router.push("/dashboard")
+      router.refresh()
+    } catch (err: any) {
+      console.error("Reset progress error:", err)
+      alert(err.message || "Gagal mereset progress")
+    } finally {
+      setIsResetting(false)
+    }
   }
 
   return (
@@ -89,9 +131,30 @@ export default function SettingsContent({ user }: { user: User }) {
             </div>
           </Card>
 
-          <Card className="p-1 border-invisible-1 bg-invisible-1">
+          <Card className="p-6 bg-white/95 backdrop-blur-sm">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Data & Privasi</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">Reset Progress Pembelajaran</p>
+                <p className="text-gray-600 text-sm mb-3">
+                  Menghapus semua data progress pembelajaran, termasuk jawaban kuis dan hasil tes. Tindakan ini tidak dapat dibatalkan.
+                </p>
+                <Button 
+                  onClick={handleResetProgress} 
+                  disabled={isResetting}
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  {isResetting ? 'Mereset...' : '📊 Reset Progress'}
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 bg-white/95 backdrop-blur-sm">
+            <h2 className="text-xl font-bold text-red-600 mb-4">Zona Berbahaya</h2>
             <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white">
-              Logout
+              🚪 Logout
             </Button>
           </Card>
         </div>

@@ -296,8 +296,62 @@ export default function SettingsScreen() {
           text: "Reset", 
           style: "destructive",
           onPress: async () => {
-            // TODO: Implement reset progress
-            Alert.alert("Info", "Fitur ini akan segera tersedia.");
+            try {
+              const currentUser = await getCurrentUser();
+              if (!currentUser) {
+                Alert.alert("Error", "User tidak ditemukan");
+                return;
+              }
+
+              console.log("Resetting progress for user:", currentUser.id);
+
+              // Delete quiz answers (includes final test answers now)
+              const { data: quizData, error: quizError, count: quizCount } = await supabase
+                .from("quiz_answers")
+                .delete()
+                .eq("user_id", currentUser.id)
+                .select();
+
+              console.log("Quiz answers deleted:", quizData?.length || 0, "Error:", quizError);
+
+              if (quizError) {
+                console.error("Error deleting quiz answers:", quizError);
+                Alert.alert("Error", "Gagal menghapus jawaban kuis: " + quizError.message);
+                return;
+              }
+
+              // Delete user pathway progress
+              const { data: progressData, error: progressError } = await supabase
+                .from("user_pathway_progress")
+                .delete()
+                .eq("user_id", currentUser.id)
+                .select();
+
+              console.log("Progress deleted:", progressData?.length || 0, "Error:", progressError);
+
+              if (progressError) {
+                console.error("Error deleting progress:", progressError);
+                Alert.alert("Error", "Gagal mereset progress: " + progressError.message);
+                return;
+              }
+
+              Alert.alert(
+                "Sukses", 
+                "Semua progress pembelajaran telah direset.",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                      // Optionally refresh the screen or navigate
+                      router.replace("/(tabs)");
+                    }
+                  }
+                ]
+              );
+            } catch (err: any) {
+              console.error("Reset progress error:", err);
+              Alert.alert("Error", err.message || "Gagal mereset progress");
+            }
           }
         },
       ]
@@ -461,13 +515,6 @@ export default function SettingsScreen() {
             onPress={handleResetProgress}
             theme={theme}
           />
-          <SettingsItem
-            icon="📥"
-            title="Unduh Data"
-            subtitle="Ekspor data pembelajaran Anda"
-            onPress={() => Alert.alert("Info", "Fitur ini akan segera tersedia.")}
-            theme={theme}
-          />
         </SettingsSection>
 
         {/* App Info */}
@@ -476,18 +523,6 @@ export default function SettingsScreen() {
             icon="📱"
             title="Versi Aplikasi"
             subtitle="1.0.0"
-            theme={theme}
-          />
-          <SettingsItem
-            icon="📄"
-            title="Syarat & Ketentuan"
-            onPress={() => Alert.alert("Info", "Fitur ini akan segera tersedia.")}
-            theme={theme}
-          />
-          <SettingsItem
-            icon="🛡️"
-            title="Kebijakan Privasi"
-            onPress={() => Alert.alert("Info", "Fitur ini akan segera tersedia.")}
             theme={theme}
           />
         </SettingsSection>
