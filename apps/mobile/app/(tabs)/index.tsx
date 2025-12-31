@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase, getCurrentUser, signOut } from "../../lib/supabase";
+import { useTheme, ThemeColors } from "../../lib/ThemeContext";
 
 // Animated Floating Icon Component
 const FloatingIcon = ({ 
@@ -80,13 +81,15 @@ const PathwayCard = ({
   index, 
   locked, 
   progress,
-  onPress 
+  onPress,
+  theme,
 }: { 
   pathway: any; 
   index: number; 
   locked: boolean;
   progress?: any;
   onPress: () => void;
+  theme: ThemeColors;
 }) => {
   const getStatusColor = () => {
     if (locked) return "#9ca3af";
@@ -110,11 +113,11 @@ const PathwayCard = ({
       style={{ marginBottom: 16 }}
     >
       <View style={{
-        backgroundColor: locked ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.1)",
+        backgroundColor: locked ? theme.cardBg : theme.cardBg,
         borderRadius: 16,
         padding: 20,
         borderWidth: 1,
-        borderColor: locked ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.2)",
+        borderColor: locked ? theme.cardBorder : theme.cardBorder,
         flexDirection: "row",
         alignItems: "center",
       }}>
@@ -140,7 +143,7 @@ const PathwayCard = ({
         {/* Content */}
         <View style={{ flex: 1 }}>
           <Text style={{ 
-            color: locked ? "#9ca3af" : "white", 
+            color: locked ? theme.textMuted : theme.textPrimary, 
             fontSize: 16, 
             fontWeight: "600",
             marginBottom: 4
@@ -148,7 +151,7 @@ const PathwayCard = ({
             {pathway.title}
           </Text>
           <Text style={{ 
-            color: locked ? "#6b7280" : "#a5b4fc", 
+            color: locked ? theme.textMuted : theme.textSecondary, 
             fontSize: 13 
           }} numberOfLines={2}>
             {pathway.description}
@@ -172,6 +175,7 @@ const PathwayCard = ({
 };
 
 export default function DashboardScreen() {
+  const { theme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [pathways, setPathways] = useState<any[]>([]);
   const [userProgress, setUserProgress] = useState<any[]>([]);
@@ -265,17 +269,17 @@ export default function DashboardScreen() {
   if (!user) {
     return (
       <LinearGradient
-        colors={["#0f172a", "#312e81", "#1e1b4b"]}
+        colors={[...theme.gradient]}
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
       >
-        <Text style={{ color: "white" }}>Loading...</Text>
+        <Text style={{ color: theme.textPrimary }}>Loading...</Text>
       </LinearGradient>
     );
   }
 
   return (
     <LinearGradient
-      colors={["#0f172a", "#312e81", "#1e1b4b"]}
+      colors={[...theme.gradient]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{ flex: 1 }}
@@ -290,12 +294,12 @@ export default function DashboardScreen() {
 
       {/* Header - Fixed */}
       <View style={{
-        backgroundColor: "rgba(255,255,255,0.1)",
+        backgroundColor: theme.cardBg,
         paddingTop: 50,
         paddingBottom: 16,
         paddingHorizontal: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.1)",
+        borderBottomColor: theme.cardBorder,
         height: 110,
       }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -304,25 +308,25 @@ export default function DashboardScreen() {
             style={{ width: 32, height: 32 }} 
             resizeMode="contain"
           />
-          <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>ChemLab</Text>
+          <Text style={{ fontSize: 28, fontWeight: "bold", color: theme.textPrimary }}>ChemLab</Text>
         </View>
-        <Text style={{ fontSize: 13, color: "#a5b4fc", marginTop: 4 }}>Virtual Chemistry Laboratory</Text>
+        <Text style={{ fontSize: 13, color: theme.textSecondary, marginTop: 4 }}>Virtual Chemistry Laboratory</Text>
       </View>
 
       <ScrollView 
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a5b4fc" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.textSecondary} />
         }
         showsVerticalScrollIndicator={false}
       >
         {/* Welcome Section */}
         <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 26, fontWeight: "bold", color: "white", marginBottom: 4 }}>
+          <Text style={{ fontSize: 26, fontWeight: "bold", color: theme.textPrimary, marginBottom: 4 }}>
             Selamat datang, {user?.user_metadata?.full_name || "Siswa"}!
           </Text>
-          <Text style={{ fontSize: 15, color: "#a5b4fc" }}>
+          <Text style={{ fontSize: 15, color: theme.textSecondary }}>
             Lanjutkan perjalanan belajar kimia Anda
           </Text>
         </View>
@@ -376,10 +380,10 @@ export default function DashboardScreen() {
               marginRight: 12 
             }} />
             <View>
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: theme.textPrimary }}>
                 Ikatan Kimia
               </Text>
-              <Text style={{ fontSize: 13, color: "#a5b4fc" }}>
+              <Text style={{ fontSize: 13, color: theme.textSecondary }}>
                 Pembelajaran interaktif ikatan kimia
               </Text>
             </View>
@@ -387,17 +391,17 @@ export default function DashboardScreen() {
 
           {loading ? (
             <View style={{ padding: 40, alignItems: "center" }}>
-              <Text style={{ color: "#a5b4fc" }}>Memuat pathway...</Text>
+              <Text style={{ color: theme.textSecondary }}>Memuat pathway...</Text>
             </View>
           ) : pathways.length === 0 ? (
             <View style={{ 
               padding: 40, 
               alignItems: "center",
-              backgroundColor: "rgba(255,255,255,0.05)",
+              backgroundColor: theme.cardBg,
               borderRadius: 16,
             }}>
               <Text style={{ fontSize: 40, marginBottom: 12 }}>📚</Text>
-              <Text style={{ color: "#a5b4fc", textAlign: "center" }}>
+              <Text style={{ color: theme.textSecondary, textAlign: "center" }}>
                 Belum ada pathway tersedia.{"\n"}Silakan coba lagi nanti.
               </Text>
             </View>
@@ -409,6 +413,7 @@ export default function DashboardScreen() {
                 index={index}
                 locked={isPathwayLocked(pathway.order_number)}
                 progress={getProgressForPathway(pathway.id)}
+                theme={theme}
                 onPress={() => {
                   // Navigate to pathway detail
                   router.push(`/pathway/${pathway.id}`);

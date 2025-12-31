@@ -16,6 +16,7 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase, getCurrentUser, signOut } from "../../lib/supabase";
+import { useTheme, ThemeColors } from "../../lib/ThemeContext";
 
 // Animated Floating Icon Component
 const FloatingIcon = ({ 
@@ -84,6 +85,7 @@ const SettingsItem = ({
   onPress,
   rightElement,
   danger = false,
+  theme,
 }: { 
   icon: string;
   title: string;
@@ -91,26 +93,27 @@ const SettingsItem = ({
   onPress?: () => void;
   rightElement?: React.ReactNode;
   danger?: boolean;
+  theme: ThemeColors;
 }) => (
   <TouchableOpacity 
     onPress={onPress}
     activeOpacity={onPress ? 0.7 : 1}
     style={{
-      backgroundColor: "rgba(255,255,255,0.05)",
+      backgroundColor: theme.cardBg,
       borderRadius: 12,
       padding: 16,
       marginBottom: 12,
       flexDirection: "row",
       alignItems: "center",
       borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.1)",
+      borderColor: theme.cardBorder,
     }}
   >
     <View style={{
       width: 44,
       height: 44,
       borderRadius: 12,
-      backgroundColor: danger ? "rgba(239, 68, 68, 0.2)" : "rgba(99, 102, 241, 0.2)",
+      backgroundColor: danger ? theme.dangerBg : theme.iconBg,
       alignItems: "center",
       justifyContent: "center",
       marginRight: 16,
@@ -119,7 +122,7 @@ const SettingsItem = ({
     </View>
     <View style={{ flex: 1 }}>
       <Text style={{ 
-        color: danger ? "#f87171" : "white", 
+        color: danger ? "#f87171" : theme.textPrimary, 
         fontSize: 16, 
         fontWeight: "500",
         marginBottom: subtitle ? 4 : 0,
@@ -127,13 +130,13 @@ const SettingsItem = ({
         {title}
       </Text>
       {subtitle && (
-        <Text style={{ color: "#9ca3af", fontSize: 13 }}>
+        <Text style={{ color: theme.textMuted, fontSize: 13 }}>
           {subtitle}
         </Text>
       )}
     </View>
     {rightElement || (onPress && (
-      <Text style={{ color: "#6b7280", fontSize: 18 }}>›</Text>
+      <Text style={{ color: theme.textMuted, fontSize: 18 }}>›</Text>
     ))}
   </TouchableOpacity>
 );
@@ -141,14 +144,16 @@ const SettingsItem = ({
 // Settings Section Component
 const SettingsSection = ({ 
   title, 
-  children 
+  children,
+  theme,
 }: { 
   title: string; 
   children: React.ReactNode;
+  theme: ThemeColors;
 }) => (
   <View style={{ marginBottom: 24 }}>
     <Text style={{ 
-      color: "#a5b4fc", 
+      color: theme.textSecondary, 
       fontSize: 13, 
       fontWeight: "600",
       marginBottom: 12,
@@ -163,9 +168,9 @@ const SettingsSection = ({
 );
 
 export default function SettingsScreen() {
+  const { isDarkMode, theme, setDarkMode } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [editName, setEditName] = useState("");
@@ -303,17 +308,17 @@ export default function SettingsScreen() {
   if (!user) {
     return (
       <LinearGradient
-        colors={["#0f172a", "#312e81", "#1e1b4b"]}
+        colors={[...theme.gradient]}
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
       >
-        <Text style={{ color: "white" }}>Loading...</Text>
+        <Text style={{ color: theme.textPrimary }}>Loading...</Text>
       </LinearGradient>
     );
   }
 
   return (
     <LinearGradient
-      colors={["#0f172a", "#312e81", "#1e1b4b"]}
+      colors={[...theme.gradient]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{ flex: 1 }}
@@ -328,12 +333,12 @@ export default function SettingsScreen() {
 
       {/* Header - Fixed */}
       <View style={{
-        backgroundColor: "rgba(255,255,255,0.1)",
+        backgroundColor: theme.cardBg,
         paddingTop: 50,
         paddingBottom: 16,
         paddingHorizontal: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.1)",
+        borderBottomColor: theme.cardBorder,
         height: 110,
       }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -342,9 +347,9 @@ export default function SettingsScreen() {
             style={{ width: 32, height: 32 }} 
             resizeMode="contain"
           />
-          <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>Pengaturan</Text>
+          <Text style={{ fontSize: 28, fontWeight: "bold", color: theme.textPrimary }}>Pengaturan</Text>
         </View>
-        <Text style={{ fontSize: 13, color: "#a5b4fc", marginTop: 4 }}>Kelola akun dan preferensi Anda</Text>
+        <Text style={{ fontSize: 13, color: theme.textSecondary, marginTop: 4 }}>Kelola akun dan preferensi Anda</Text>
       </View>
 
       <ScrollView 
@@ -354,14 +359,14 @@ export default function SettingsScreen() {
       >
         {/* Profile Card */}
         <View style={{
-          backgroundColor: "rgba(255,255,255,0.1)",
+          backgroundColor: theme.cardBg,
           borderRadius: 16,
           padding: 20,
           marginBottom: 24,
           flexDirection: "row",
           alignItems: "center",
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.1)",
+          borderColor: theme.cardBorder,
         }}>
           <View style={{
             width: 60,
@@ -375,42 +380,46 @@ export default function SettingsScreen() {
             <Text style={{ fontSize: 28 }}>👤</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold", marginBottom: 4 }}>
+            <Text style={{ color: theme.textPrimary, fontSize: 18, fontWeight: "bold", marginBottom: 4 }}>
               {user?.user_metadata?.full_name || "User"}
             </Text>
-            <Text style={{ color: "#a5b4fc", fontSize: 14 }}>
+            <Text style={{ color: theme.textSecondary, fontSize: 14 }}>
               {user?.email}
             </Text>
           </View>
         </View>
 
         {/* Account Settings */}
-        <SettingsSection title="Akun">
+        <SettingsSection title="Akun" theme={theme}>
           <SettingsItem
             icon="👤"
             title="Edit Profil"
             subtitle="Ubah nama dan foto profil"
             onPress={handleEditProfile}
+            theme={theme}
           />
           <SettingsItem
             icon="🔒"
             title="Ubah Password"
             subtitle="Perbarui kata sandi Anda"
             onPress={handleChangePassword}
+            theme={theme}
           />
           <SettingsItem
             icon="📧"
             title="Email"
             subtitle={user?.email}
+            theme={theme}
           />
         </SettingsSection>
 
         {/* Preferences */}
-        <SettingsSection title="Preferensi">
+        <SettingsSection title="Preferensi" theme={theme}>
           <SettingsItem
             icon="🔔"
             title="Notifikasi"
             subtitle="Terima pemberitahuan pembelajaran"
+            theme={theme}
             rightElement={
               <Switch
                 value={notifications}
@@ -421,16 +430,16 @@ export default function SettingsScreen() {
             }
           />
           <SettingsItem
-            icon="🌙"
-            title="Mode Gelap"
-            subtitle="Selalu aktif"
+            icon={isDarkMode ? "🌙" : "☀️"}
+            title={isDarkMode ? "Mode Gelap" : "Mode Terang"}
+            subtitle={isDarkMode ? "Aktif" : "Aktif"}
+            theme={theme}
             rightElement={
               <Switch
-                value={darkMode}
+                value={isDarkMode}
                 onValueChange={setDarkMode}
                 trackColor={{ false: "#374151", true: "#6366f1" }}
                 thumbColor="white"
-                disabled
               />
             }
           />
@@ -438,53 +447,60 @@ export default function SettingsScreen() {
             icon="🌐"
             title="Bahasa"
             subtitle="Indonesia"
+            theme={theme}
             onPress={() => Alert.alert("Info", "Saat ini hanya mendukung Bahasa Indonesia.")}
           />
         </SettingsSection>
 
         {/* Data & Privacy */}
-        <SettingsSection title="Data & Privasi">
+        <SettingsSection title="Data & Privasi" theme={theme}>
           <SettingsItem
             icon="📊"
             title="Reset Progress"
             subtitle="Hapus semua data pembelajaran"
             onPress={handleResetProgress}
+            theme={theme}
           />
           <SettingsItem
             icon="📥"
             title="Unduh Data"
             subtitle="Ekspor data pembelajaran Anda"
             onPress={() => Alert.alert("Info", "Fitur ini akan segera tersedia.")}
+            theme={theme}
           />
         </SettingsSection>
 
         {/* App Info */}
-        <SettingsSection title="Informasi Aplikasi">
+        <SettingsSection title="Informasi Aplikasi" theme={theme}>
           <SettingsItem
             icon="📱"
             title="Versi Aplikasi"
             subtitle="1.0.0"
+            theme={theme}
           />
           <SettingsItem
             icon="📄"
             title="Syarat & Ketentuan"
             onPress={() => Alert.alert("Info", "Fitur ini akan segera tersedia.")}
+            theme={theme}
           />
           <SettingsItem
             icon="🛡️"
             title="Kebijakan Privasi"
             onPress={() => Alert.alert("Info", "Fitur ini akan segera tersedia.")}
+            theme={theme}
           />
         </SettingsSection>
 
         {/* Danger Zone */}
-        <SettingsSection title="Zona Berbahaya">
+        <SettingsSection title="Zona Berbahaya" theme={theme}>
           <SettingsItem
             icon="🚪"
             title="Keluar"
             subtitle="Keluar dari akun Anda"
             onPress={handleSignOut}
             danger
+            theme={theme}
           />
         </SettingsSection>
 
@@ -507,18 +523,18 @@ export default function SettingsScreen() {
           padding: 20,
         }}>
           <View style={{
-            backgroundColor: "#1e1b4b",
+            backgroundColor: theme.modalBg,
             borderRadius: 20,
             padding: 24,
             width: "100%",
             maxWidth: 340,
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.1)",
+            borderColor: theme.cardBorder,
           }}>
             <Text style={{ 
               fontSize: 22, 
               fontWeight: "bold", 
-              color: "white", 
+              color: theme.textPrimary, 
               marginBottom: 20,
               textAlign: "center",
             }}>
@@ -526,7 +542,7 @@ export default function SettingsScreen() {
             </Text>
 
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ color: "#a5b4fc", fontSize: 14, marginBottom: 8 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 8 }}>
                 Nama Lengkap
               </Text>
               <TextInput
@@ -535,13 +551,13 @@ export default function SettingsScreen() {
                 placeholder="Masukkan nama lengkap"
                 placeholderTextColor="#6b7280"
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: theme.inputBg,
                   borderRadius: 12,
                   padding: 16,
-                  color: "white",
+                  color: theme.textPrimary,
                   fontSize: 16,
                   borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.2)",
+                  borderColor: theme.cardBorder,
                 }}
               />
             </View>
@@ -551,14 +567,14 @@ export default function SettingsScreen() {
                 onPress={() => setEditModalVisible(false)}
                 style={{
                   flex: 1,
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: theme.inputBg,
                   borderRadius: 12,
                   paddingVertical: 14,
                   alignItems: "center",
                 }}
                 disabled={saving}
               >
-                <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
+                <Text style={{ color: theme.textPrimary, fontSize: 16, fontWeight: "600" }}>
                   Batal
                 </Text>
               </TouchableOpacity>
@@ -602,18 +618,18 @@ export default function SettingsScreen() {
           padding: 20,
         }}>
           <View style={{
-            backgroundColor: "#1e1b4b",
+            backgroundColor: theme.modalBg,
             borderRadius: 20,
             padding: 24,
             width: "100%",
             maxWidth: 340,
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.1)",
+            borderColor: theme.cardBorder,
           }}>
             <Text style={{ 
               fontSize: 22, 
               fontWeight: "bold", 
-              color: "white", 
+              color: theme.textPrimary, 
               marginBottom: 20,
               textAlign: "center",
             }}>
@@ -621,7 +637,7 @@ export default function SettingsScreen() {
             </Text>
 
             <View style={{ marginBottom: 16 }}>
-              <Text style={{ color: "#a5b4fc", fontSize: 14, marginBottom: 8 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 8 }}>
                 Password Baru
               </Text>
               <TextInput
@@ -631,19 +647,19 @@ export default function SettingsScreen() {
                 placeholderTextColor="#6b7280"
                 secureTextEntry
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: theme.inputBg,
                   borderRadius: 12,
                   padding: 16,
-                  color: "white",
+                  color: theme.textPrimary,
                   fontSize: 16,
                   borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.2)",
+                  borderColor: theme.cardBorder,
                 }}
               />
             </View>
 
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ color: "#a5b4fc", fontSize: 14, marginBottom: 8 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 8 }}>
                 Konfirmasi Password
               </Text>
               <TextInput
@@ -653,18 +669,18 @@ export default function SettingsScreen() {
                 placeholderTextColor="#6b7280"
                 secureTextEntry
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: theme.inputBg,
                   borderRadius: 12,
                   padding: 16,
-                  color: "white",
+                  color: theme.textPrimary,
                   fontSize: 16,
                   borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.2)",
+                  borderColor: theme.cardBorder,
                 }}
               />
             </View>
 
-            <Text style={{ color: "#6b7280", fontSize: 12, marginBottom: 16, textAlign: "center" }}>
+            <Text style={{ color: theme.textMuted, fontSize: 12, marginBottom: 16, textAlign: "center" }}>
               Password minimal 6 karakter
             </Text>
 
@@ -673,14 +689,14 @@ export default function SettingsScreen() {
                 onPress={() => setPasswordModalVisible(false)}
                 style={{
                   flex: 1,
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: theme.inputBg,
                   borderRadius: 12,
                   paddingVertical: 14,
                   alignItems: "center",
                 }}
                 disabled={saving}
               >
-                <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
+                <Text style={{ color: theme.textPrimary, fontSize: 16, fontWeight: "600" }}>
                   Batal
                 </Text>
               </TouchableOpacity>

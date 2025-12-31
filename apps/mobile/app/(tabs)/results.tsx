@@ -14,6 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase, getCurrentUser } from "../../lib/supabase";
+import { useTheme, ThemeColors } from "../../lib/ThemeContext";
 
 // Stats Card Component
 const StatsCard = ({ 
@@ -56,13 +57,15 @@ const ResultItem = ({
   title, 
   type, 
   score,
-  onPress 
+  onPress,
+  theme,
 }: { 
   number: number;
   title: string; 
   type: string;
   score: number;
   onPress: () => void;
+  theme: ThemeColors;
 }) => {
   const getScoreColor = () => {
     if (score >= 80) return "#22c55e";
@@ -77,13 +80,13 @@ const ResultItem = ({
       style={{ marginBottom: 12 }}
     >
       <View style={{
-        backgroundColor: "rgba(255,255,255,0.05)",
+        backgroundColor: theme.cardBg,
         borderRadius: 16,
         padding: 16,
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.1)",
+        borderColor: theme.cardBorder,
       }}>
         {/* Number Badge */}
         <View style={{
@@ -103,7 +106,7 @@ const ResultItem = ({
         {/* Content */}
         <View style={{ flex: 1 }}>
           <Text style={{ 
-            color: "white", 
+            color: theme.textPrimary, 
             fontSize: 15, 
             fontWeight: "600",
             marginBottom: 2
@@ -111,7 +114,7 @@ const ResultItem = ({
             {title}
           </Text>
           <Text style={{ 
-            color: "#a5b4fc", 
+            color: theme.textSecondary, 
             fontSize: 12 
           }}>
             {type} • Klik untuk melihat pembahasan
@@ -194,6 +197,7 @@ const FloatingIcon = ({
 };
 
 export default function ResultsScreen() {
+  const { theme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [quizResults, setQuizResults] = useState<any[]>([]);
   const [pathways, setPathways] = useState<any[]>([]);
@@ -348,17 +352,17 @@ export default function ResultsScreen() {
   if (!user) {
     return (
       <LinearGradient
-        colors={["#0f172a", "#312e81", "#1e1b4b"]}
+        colors={[...theme.gradient]}
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
       >
-        <Text style={{ color: "white" }}>Loading...</Text>
+        <Text style={{ color: theme.textPrimary }}>Loading...</Text>
       </LinearGradient>
     );
   }
 
   return (
     <LinearGradient
-      colors={["#0f172a", "#312e81", "#1e1b4b"]}
+      colors={[...theme.gradient]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{ flex: 1 }}
@@ -373,12 +377,12 @@ export default function ResultsScreen() {
 
       {/* Header - Fixed */}
       <View style={{
-        backgroundColor: "rgba(255,255,255,0.1)",
+        backgroundColor: theme.cardBg,
         paddingTop: 50,
         paddingBottom: 16,
         paddingHorizontal: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.1)",
+        borderBottomColor: theme.cardBorder,
         height: 110,
       }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -387,16 +391,16 @@ export default function ResultsScreen() {
             style={{ width: 32, height: 32 }} 
             resizeMode="contain"
           />
-          <Text style={{ fontSize: 28, fontWeight: "bold", color: "white" }}>Hasil Pembelajaran</Text>
+          <Text style={{ fontSize: 28, fontWeight: "bold", color: theme.textPrimary }}>Hasil Pembelajaran</Text>
         </View>
-        <Text style={{ fontSize: 13, color: "#a5b4fc", marginTop: 4 }}>Pantau progress dan nilai Anda</Text>
+        <Text style={{ fontSize: 13, color: theme.textSecondary, marginTop: 4 }}>Pantau progress dan nilai Anda</Text>
       </View>
 
       <ScrollView 
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a5b4fc" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.textSecondary} />
         }
         showsVerticalScrollIndicator={false}
       >
@@ -424,16 +428,16 @@ export default function ResultsScreen() {
 
         {/* Results List */}
         <View style={{
-          backgroundColor: "rgba(255,255,255,0.05)",
+          backgroundColor: theme.cardBg,
           borderRadius: 20,
           padding: 20,
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.1)",
+          borderColor: theme.cardBorder,
         }}>
           <Text style={{ 
             fontSize: 18, 
             fontWeight: "bold", 
-            color: "white", 
+            color: theme.textPrimary, 
             marginBottom: 16 
           }}>
             Detail Hasil
@@ -441,12 +445,12 @@ export default function ResultsScreen() {
 
           {loading ? (
             <View style={{ padding: 40, alignItems: "center" }}>
-              <Text style={{ color: "#a5b4fc" }}>Memuat hasil...</Text>
+              <Text style={{ color: theme.textSecondary }}>Memuat hasil...</Text>
             </View>
           ) : quizResults.length === 0 ? (
             <View style={{ padding: 40, alignItems: "center" }}>
               <Text style={{ fontSize: 40, marginBottom: 12 }}>📝</Text>
-              <Text style={{ color: "#a5b4fc", textAlign: "center" }}>
+              <Text style={{ color: theme.textSecondary, textAlign: "center" }}>
                 Belum ada hasil kuis atau tes.{"\n"}Selesaikan pembelajaran untuk melihat hasil.
               </Text>
             </View>
@@ -458,6 +462,7 @@ export default function ResultsScreen() {
                 title={result.title || `Kuis ${index + 1}`}
                 type={result.type === "final_test" ? "Tes Akhir" : "Kuis"}
                 score={result.score || 0}
+                theme={theme}
                 onPress={() => {
                   fetchQuizDetail(result.pathwayId, result.title);
                 }}

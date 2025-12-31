@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Dimensions, Linking, Image, Animated, Easing } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTheme, ThemeColors } from "../../lib/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -261,10 +262,11 @@ const TeamMemberCard = ({
 
 export default function AboutScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
 
   return (
     <LinearGradient
-      colors={["#0f172a", "#312e81", "#1e1b4b"]}
+      colors={[...theme.gradient]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{ flex: 1 }}
@@ -283,9 +285,9 @@ export default function AboutScreen() {
           paddingHorizontal: 20,
           paddingTop: 50,
           paddingBottom: 16,
-          backgroundColor: "rgba(255,255,255,0.05)",
+          backgroundColor: theme.cardBg,
           borderBottomWidth: 1,
-          borderBottomColor: "rgba(255,255,255,0.1)",
+          borderBottomColor: theme.cardBorder,
           height: 110,
         }}
       >
@@ -295,11 +297,11 @@ export default function AboutScreen() {
             style={{ width: 32, height: 32 }} 
             resizeMode="contain"
           />
-          <Text style={{ color: "white", fontSize: 28, fontWeight: "bold" }}>
+          <Text style={{ color: theme.textPrimary, fontSize: 28, fontWeight: "bold" }}>
             About ChemLab
           </Text>
         </View>
-        <Text style={{ color: "#a5b4fc", fontSize: 13, marginTop: 4 }}>
+        <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 4 }}>
           Virtual Chemistry Laboratory
         </Text>
       </View>
@@ -313,7 +315,7 @@ export default function AboutScreen() {
         <View style={{ paddingHorizontal: 20, paddingVertical: 30 }}>
           <Text
             style={{
-              color: "white",
+              color: theme.textPrimary,
               fontSize: 28,
               fontWeight: "bold",
               lineHeight: 36,
@@ -326,7 +328,7 @@ export default function AboutScreen() {
 
           <Text
             style={{
-              color: "rgba(199, 210, 254, 0.8)",
+              color: theme.textMuted,
               fontSize: 16,
               lineHeight: 24,
               marginBottom: 0,
@@ -340,7 +342,7 @@ export default function AboutScreen() {
         <View style={{ paddingHorizontal: 20, paddingVertical: 0 }}>
           <Text
             style={{
-              color: "white",
+              color: theme.textPrimary,
               fontSize: 22,
               fontWeight: "bold",
               marginBottom: 8,
@@ -350,7 +352,7 @@ export default function AboutScreen() {
           </Text>
           <Text
             style={{
-              color: "rgba(199, 210, 254, 0.7)",
+              color: theme.textMuted,
               fontSize: 14,
               marginBottom: 20,
             }}
@@ -388,7 +390,7 @@ export default function AboutScreen() {
         <View style={{ paddingVertical: 30 }}>
           <Text
             style={{
-              color: "white",
+              color: theme.textPrimary,
               fontSize: 22,
               fontWeight: "bold",
               marginBottom: 8,
@@ -399,7 +401,7 @@ export default function AboutScreen() {
           </Text>
           <Text
             style={{
-              color: "rgba(199, 210, 254, 0.7)",
+              color: theme.textMuted,
               fontSize: 14,
               marginBottom: 20,
               paddingHorizontal: 20,
@@ -444,7 +446,7 @@ export default function AboutScreen() {
         <View style={{ paddingHorizontal: 20, paddingVertical: 20 }}>
           <Text
             style={{
-              color: "white",
+              color: theme.textPrimary,
               fontSize: 22,
               fontWeight: "bold",
               marginBottom: 16,
@@ -476,7 +478,7 @@ export default function AboutScreen() {
         <View style={{ paddingHorizontal: 20, paddingVertical: 20 }}>
           <Text
             style={{
-              color: "white",
+              color: theme.textPrimary,
               fontSize: 22,
               fontWeight: "bold",
               marginBottom: 16,

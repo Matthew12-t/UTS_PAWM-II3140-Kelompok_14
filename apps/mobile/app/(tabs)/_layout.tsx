@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { View, Text, Platform, Image, ImageSourcePropType } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { ThemeProvider, useTheme } from "../../lib/ThemeContext";
 
 // Tab icon images
 const tabIcons: { [key: string]: ImageSourcePropType } = {
@@ -20,6 +21,8 @@ const TabIcon = ({
   label: string; 
   focused: boolean;
 }) => {
+  const { theme } = useTheme();
+  
   if (focused) {
     return (
       <View style={{ 
@@ -50,7 +53,7 @@ const TabIcon = ({
           />
         </LinearGradient>
         <Text style={{ 
-          color: "#a5b4fc", 
+          color: theme.tabBarActive, 
           fontSize: 9, 
           marginTop: 4,
           fontWeight: "600",
@@ -70,7 +73,7 @@ const TabIcon = ({
         resizeMode="contain"
       />
       <Text style={{ 
-        color: "#9ca3af", 
+        color: theme.tabBarInactive, 
         fontSize: 9, 
         marginTop: 4,
         textAlign: "center",
@@ -81,14 +84,16 @@ const TabIcon = ({
   );
 };
 
-export default function TabLayout() {
+function TabLayoutContent() {
+  const { theme } = useTheme();
+  
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#1e1b4b",
-          borderTopColor: "rgba(255,255,255,0.1)",
+          backgroundColor: theme.tabBarBg,
+          borderTopColor: theme.tabBarBorder,
           borderTopWidth: 1,
           height: Platform.OS === "ios" ? 85 : 70,
           paddingBottom: Platform.OS === "ios" ? 20 : 10,
@@ -134,5 +139,13 @@ export default function TabLayout() {
         }}
     />
     </Tabs>
+  );
+}
+
+export default function TabLayout() {
+  return (
+    <ThemeProvider>
+      <TabLayoutContent />
+    </ThemeProvider>
   );
 }
