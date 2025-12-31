@@ -9,6 +9,9 @@ import {
   Image,
   Animated,
   Easing,
+  Modal,
+  TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -163,6 +166,13 @@ export default function SettingsScreen() {
   const [user, setUser] = useState<any>(null);
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -173,9 +183,85 @@ export default function SettingsScreen() {
         return;
       }
       setUser(currentUser);
+      setEditName(currentUser?.user_metadata?.full_name || "");
     };
     fetchUser();
   }, []);
+
+  const handleEditProfile = () => {
+    setEditName(user?.user_metadata?.full_name || "");
+    setEditModalVisible(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      Alert.alert("Error", "Nama tidak boleh kosong");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: editName.trim() }
+      });
+
+      if (error) {
+        Alert.alert("Error", error.message);
+      } else {
+        // Refresh user data
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+        setEditModalVisible(false);
+        Alert.alert("Sukses", "Profil berhasil diperbarui");
+      }
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Gagal memperbarui profil");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChangePassword = () => {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordModalVisible(true);
+  };
+
+  const handleSavePassword = async () => {
+    if (!newPassword.trim()) {
+      Alert.alert("Error", "Password baru tidak boleh kosong");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert("Error", "Password minimal 6 karakter");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert("Error", "Konfirmasi password tidak cocok");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        Alert.alert("Error", error.message);
+      } else {
+        setPasswordModalVisible(false);
+        Alert.alert("Sukses", "Password berhasil diperbarui");
+      }
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Gagal memperbarui password");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSignOut = async () => {
     Alert.alert(
@@ -304,13 +390,13 @@ export default function SettingsScreen() {
             icon="👤"
             title="Edit Profil"
             subtitle="Ubah nama dan foto profil"
-            onPress={() => Alert.alert("Info", "Fitur ini akan segera tersedia.")}
+            onPress={handleEditProfile}
           />
           <SettingsItem
             icon="🔒"
             title="Ubah Password"
             subtitle="Perbarui kata sandi Anda"
-            onPress={() => Alert.alert("Info", "Fitur ini akan segera tersedia.")}
+            onPress={handleChangePassword}
           />
           <SettingsItem
             icon="📧"
@@ -405,6 +491,223 @@ export default function SettingsScreen() {
         {/* Bottom Spacing */}
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={editModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.7)",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        }}>
+          <View style={{
+            backgroundColor: "#1e1b4b",
+            borderRadius: 20,
+            padding: 24,
+            width: "100%",
+            maxWidth: 340,
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.1)",
+          }}>
+            <Text style={{ 
+              fontSize: 22, 
+              fontWeight: "bold", 
+              color: "white", 
+              marginBottom: 20,
+              textAlign: "center",
+            }}>
+              Edit Profil
+            </Text>
+
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ color: "#a5b4fc", fontSize: 14, marginBottom: 8 }}>
+                Nama Lengkap
+              </Text>
+              <TextInput
+                value={editName}
+                onChangeText={setEditName}
+                placeholder="Masukkan nama lengkap"
+                placeholderTextColor="#6b7280"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  padding: 16,
+                  color: "white",
+                  fontSize: 16,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.2)",
+                }}
+              />
+            </View>
+
+            <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
+              <TouchableOpacity
+                onPress={() => setEditModalVisible(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                }}
+                disabled={saving}
+              >
+                <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
+                  Batal
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSaveProfile}
+                disabled={saving}
+                style={{
+                  flex: 1,
+                  backgroundColor: saving ? "#4338ca" : "#6366f1",
+                  borderRadius: 12,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                }}
+              >
+                {saving ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
+                    Simpan
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Change Password Modal */}
+      <Modal
+        visible={passwordModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPasswordModalVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.7)",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        }}>
+          <View style={{
+            backgroundColor: "#1e1b4b",
+            borderRadius: 20,
+            padding: 24,
+            width: "100%",
+            maxWidth: 340,
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.1)",
+          }}>
+            <Text style={{ 
+              fontSize: 22, 
+              fontWeight: "bold", 
+              color: "white", 
+              marginBottom: 20,
+              textAlign: "center",
+            }}>
+              Ubah Password
+            </Text>
+
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ color: "#a5b4fc", fontSize: 14, marginBottom: 8 }}>
+                Password Baru
+              </Text>
+              <TextInput
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="Masukkan password baru"
+                placeholderTextColor="#6b7280"
+                secureTextEntry
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  padding: 16,
+                  color: "white",
+                  fontSize: 16,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.2)",
+                }}
+              />
+            </View>
+
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ color: "#a5b4fc", fontSize: 14, marginBottom: 8 }}>
+                Konfirmasi Password
+              </Text>
+              <TextInput
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Ulangi password baru"
+                placeholderTextColor="#6b7280"
+                secureTextEntry
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  padding: 16,
+                  color: "white",
+                  fontSize: 16,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.2)",
+                }}
+              />
+            </View>
+
+            <Text style={{ color: "#6b7280", fontSize: 12, marginBottom: 16, textAlign: "center" }}>
+              Password minimal 6 karakter
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => setPasswordModalVisible(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                }}
+                disabled={saving}
+              >
+                <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
+                  Batal
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSavePassword}
+                disabled={saving}
+                style={{
+                  flex: 1,
+                  backgroundColor: saving ? "#4338ca" : "#6366f1",
+                  borderRadius: 12,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                }}
+              >
+                {saving ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
+                    Simpan
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
