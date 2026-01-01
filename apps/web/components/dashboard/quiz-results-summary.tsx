@@ -73,26 +73,33 @@ export function QuizResultsSummary({ user }: { user: User }) {
 
   const averageScore = Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length)
   const totalScore = results.reduce((sum, r) => sum + r.score, 0)
+  const maxPossibleScore = results.length * 100
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6 bg-gradient-to-br from-blue-500 to-cyan-500 border-0 text-white shadow-lg">
-          <p className="text-sm font-medium text-blue-100 mb-2">Total Nilai</p>
-          <p className="text-4xl font-bold">{totalScore}</p>
-          <p className="text-xs text-blue-100 mt-2">{results.length} hasil</p>
+        <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0 text-white shadow-lg">
+          <p className="text-sm font-medium text-white/90 mb-2">Total Nilai Terkini</p>
+          <p className="text-4xl font-bold">
+            {totalScore}
+            <span className="text-lg font-medium text-white/70"> / {maxPossibleScore}</span>
+          </p>
+          <p className="text-xs text-white/70 mt-2">Dari {results.length} Hasil</p>
         </Card>
 
-        <Card className="p-6 bg-gradient-to-br from-indigo-500 to-purple-500 border-0 text-white shadow-lg">
-          <p className="text-sm font-medium text-indigo-100 mb-2">Rata-rata Nilai</p>
+        <Card className="p-6 bg-gradient-to-br from-violet-500 to-purple-500 border-0 text-white shadow-lg">
+          <p className="text-sm font-medium text-white/90 mb-2">Rata-rata Terkini</p>
           <p className="text-4xl font-bold">{averageScore}</p>
-          <p className="text-xs text-indigo-100 mt-2">dari 100</p>
+          <p className="text-xs text-white/70 mt-2">dari 100</p>
         </Card>
 
         <Card className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0 text-white shadow-lg">
-          <p className="text-sm font-medium text-green-100 mb-2">Selesai</p>
-          <p className="text-4xl font-bold">{results.length}</p>
-          <p className="text-xs text-green-100 mt-2">kuis & tes</p>
+          <p className="text-sm font-medium text-white/90 mb-2">Progres Materi</p>
+          <p className="text-4xl font-bold">
+            {results.length}
+            <span className="text-lg font-medium text-white/70"> Selesai</span>
+          </p>
+          <p className="text-xs text-white/70 mt-2">kuis & tes akhir</p>
         </Card>
       </div>
 
