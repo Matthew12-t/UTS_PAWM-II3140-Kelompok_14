@@ -1,0 +1,11 @@
+# Ignore other apps in monorepo
+../web
+
+# Ignore build outputs
+.expo
+dist
+build
+
+# Ignore development files
+*.log
+.DS_Store
