@@ -1,7 +1,31 @@
-# Ignore monorepo root files that could confuse EAS
+# .easignore - Files to ignore during EAS Build upload
+# IMPORTANT: This file REPLACES .gitignore when EAS decides what to upload
+
+# Don't ignore node_modules - we need them!
+# They must be included for build to work
+
+# Expo cache
+.expo/
+
+# Build outputs
+dist/
+web-build/
+
+# Native folders (will be regenerated)
+/ios
+
+# Debug files
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+
+# Generated files
+*.tsbuildinfo
+expo-env.d.ts
+
+# Monorepo files that could confuse EAS
 ../../pnpm-lock.yaml
 ../../pnpm-workspace.yaml
-../../.npmrc
-
-# Don't ignore node_modules - we want EAS to use pre-installed deps
-# node_modules/
