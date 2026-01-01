@@ -52,6 +52,8 @@ export default function ResultsContent({ user }: { user: User }) {
   const experimentTypes = ["ionic", "covalent", "metallic", "hydrogen"]
   const totalScore = results.reduce((sum, r) => sum + r.score, 0)
   const correctCount = results.filter((r) => r.is_correct).length
+  const maxPossibleScore = results.length * 100
+  const averageScore = results.length > 0 ? Math.round(totalScore / results.length) : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -71,17 +73,26 @@ export default function ResultsContent({ user }: { user: User }) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="p-6 bg-blue-50 border-0">
-            <p className="text-sm font-medium text-gray-600 mb-1">Total Results</p>
-            <p className="text-3xl font-bold text-gray-900">{results.length}</p>
+          <Card className="p-6 bg-gradient-to-br from-cyan-500 to-blue-500 border-0">
+            <p className="text-sm font-medium text-white/90 mb-1">Total Nilai Terkini</p>
+            <p className="text-3xl font-bold text-white">
+              {totalScore}
+              <span className="text-lg font-medium text-white/70"> / {maxPossibleScore || 300}</span>
+            </p>
+            <p className="text-xs text-white/70 mt-1">Dari {results.length} Hasil</p>
           </Card>
-          <Card className="p-6 bg-green-50 border-0">
-            <p className="text-sm font-medium text-gray-600 mb-1">Correct Answers</p>
-            <p className="text-3xl font-bold text-gray-900">{correctCount}</p>
+          <Card className="p-6 bg-gradient-to-br from-violet-500 to-purple-500 border-0">
+            <p className="text-sm font-medium text-white/90 mb-1">Rata-rata Terkini</p>
+            <p className="text-3xl font-bold text-white">{averageScore}</p>
+            <p className="text-xs text-white/70 mt-1">dari 100</p>
           </Card>
-          <Card className="p-6 bg-amber-50 border-0">
-            <p className="text-sm font-medium text-gray-600 mb-1">Total Score</p>
-            <p className="text-3xl font-bold text-gray-900">{totalScore}</p>
+          <Card className="p-6 bg-gradient-to-br from-green-500 to-emerald-500 border-0">
+            <p className="text-sm font-medium text-white/90 mb-1">Progres Materi</p>
+            <p className="text-3xl font-bold text-white">
+              {correctCount}
+              <span className="text-lg font-medium text-white/70"> / {results.length} Selesai</span>
+            </p>
+            <p className="text-xs text-white/70 mt-1">kuis & tes akhir</p>
           </Card>
         </div>
 
