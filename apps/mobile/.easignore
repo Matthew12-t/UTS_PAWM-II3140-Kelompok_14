@@ -2,3 +2,6 @@
 ../../pnpm-lock.yaml
 ../../pnpm-workspace.yaml
 ../../.npmrc
+
+# Don't ignore node_modules - we want EAS to use pre-installed deps
+# node_modules/
