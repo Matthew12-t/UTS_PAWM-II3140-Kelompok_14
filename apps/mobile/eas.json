@@ -6,30 +6,18 @@
   "build": {
     "development": {
       "node": "20.19.4",
-      "pnpm": "9.15.1",
       "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
-      }
+      "distribution": "internal"
     },
     "preview": {
       "node": "20.19.4",
-      "pnpm": "9.15.1",
       "distribution": "internal",
-      "env": {
-        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
-      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
       "node": "20.19.4",
-      "pnpm": "9.15.1",
-      "env": {
-        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
-      },
       "android": {
         "buildType": "apk"
       }
