@@ -172,7 +172,6 @@ export default function SettingsScreen() {
   const { isDarkMode, theme, setDarkMode } = useTheme();
   const { isMuted, setMusicEnabled } = useAudio();
   const [user, setUser] = useState<any>(null);
-  const [notifications, setNotifications] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [editName, setEditName] = useState("");
@@ -480,20 +479,6 @@ export default function SettingsScreen() {
               <Switch
                 value={!isMuted}
                 onValueChange={(value) => setMusicEnabled(value)}
-                trackColor={{ false: "#374151", true: "#6366f1" }}
-                thumbColor="white"
-              />
-            }
-          />
-          <SettingsItem
-            icon="🔔"
-            title="Notifikasi"
-            subtitle="Terima pemberitahuan pembelajaran"
-            theme={theme}
-            rightElement={
-              <Switch
-                value={notifications}
-                onValueChange={setNotifications}
                 trackColor={{ false: "#374151", true: "#6366f1" }}
                 thumbColor="white"
               />
