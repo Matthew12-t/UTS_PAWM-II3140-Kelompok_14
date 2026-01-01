@@ -9,6 +9,12 @@
       "pnpm": "9.15.1",
       "env": {
         "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
+      },
+      "cache": {
+        "customPaths": ["../../node_modules"]
+      },
+      "android": {
+        "preInstall": "bash eas-build-pre-install.sh"
       }
     },
     "development": {
@@ -20,13 +26,15 @@
       "extends": "base",
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "preInstall": "bash eas-build-pre-install.sh"
       }
     },
     "production": {
       "extends": "base",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "preInstall": "bash eas-build-pre-install.sh"
       }
     }
   },
