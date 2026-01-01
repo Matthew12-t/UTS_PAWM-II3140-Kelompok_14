@@ -206,6 +206,60 @@ const FloatingIcon = ({
   );
 };
 
+// Attempt Selector Component
+const AttemptSelector = ({
+  attempts,
+  selectedAttempt,
+  onSelectAttempt,
+}: {
+  attempts: number;
+  selectedAttempt: number;
+  onSelectAttempt: (index: number) => void;
+}) => {
+
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 8 }}>
+        Pilih Percobaan ({attempts} total)
+      </Text>
+      {attempts <= 1 ? (
+        <Text style={{ color: "#a5b4fc", fontSize: 13 }}>
+          Hanya ada 1 percobaan
+        </Text>
+      ) : (
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8 }}
+        >
+          {Array.from({ length: attempts }, (_, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => onSelectAttempt(i)}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 12,
+                backgroundColor: selectedAttempt === i ? "#6366f1" : "rgba(255,255,255,0.1)",
+                borderWidth: 1,
+                borderColor: selectedAttempt === i ? "#6366f1" : "rgba(255,255,255,0.2)",
+              }}
+            >
+              <Text style={{ 
+                color: selectedAttempt === i ? "white" : "#a5b4fc", 
+                fontSize: 13,
+                fontWeight: selectedAttempt === i ? "600" : "400",
+              }}>
+                Percobaan {i + 1}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+    </View>
+  );
+};
+
 export default function ResultsScreen() {
   const { theme } = useTheme();
   const [user, setUser] = useState<any>(null);
@@ -217,7 +271,9 @@ export default function ResultsScreen() {
   const [selectedTitle, setSelectedTitle] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
-  const [quizAnswers, setQuizAnswers] = useState<any[]>([]);
+  // Changed: Store grouped attempts instead of single attempt
+  const [groupedAttempts, setGroupedAttempts] = useState<any[][]>([]);
+  const [selectedAttempt, setSelectedAttempt] = useState(0);
   const router = useRouter();
 
   // Fetch current user
@@ -233,12 +289,13 @@ export default function ResultsScreen() {
     fetchUser();
   }, []);
 
-  // Fetch quiz detail when modal opens
+  // Fetch quiz detail when modal opens - Updated to group by attempts
   const fetchQuizDetail = async (pathwayId: number, title: string) => {
     setSelectedPathway(pathwayId);
     setSelectedTitle(title);
     setModalVisible(true);
     setModalLoading(true);
+    setSelectedAttempt(0); // Reset to first (latest) attempt
 
     try {
       // Fetch pathway content for questions
@@ -256,19 +313,38 @@ export default function ResultsScreen() {
         .eq("user_id", user.id)
         .order("created_at", { ascending: true });
 
-      if (answersData) {
+      if (answersData && answersData.length > 0) {
         const questions = pathwayData?.content?.questions || [];
+        
+        // Determine questions per attempt
+        let questionsPerAttempt = questions.length;
+        
+        if (questionsPerAttempt === 0) {
+          // Count unique question_ids by looking for repeating pattern
+          const questionIds: string[] = [];
+          for (const answer of answersData) {
+            // If we see a question_id that we've seen before, we found the boundary
+            if (questionIds.includes(answer.question_id)) {
+              break;
+            }
+            questionIds.push(answer.question_id);
+          }
+          questionsPerAttempt = questionIds.length || 3; // Default to 3 if can't determine
+        }
+
+        console.log("Questions per attempt:", questionsPerAttempt);
+        console.log("Total answers:", answersData.length);
+        console.log("Expected attempts:", Math.ceil(answersData.length / questionsPerAttempt));
+
+        // Format all answers
         const formattedAnswers = answersData.map((answer: any, idx: number) => {
           const question = questions.find((q: any) => q.id === answer.question_id);
           
-          // Extract question text from explanation if question not found in content
           let questionText = question?.question || "Pertanyaan tidak ditemukan";
           let options = question?.options || [];
           
-          // If no question found in pathway content, use answer data
-          // The explanation contains the answer details
           if (!question && answer.explanation) {
-            questionText = `Pertanyaan ${idx + 1}`;
+            questionText = `Pertanyaan ${(idx % questionsPerAttempt) + 1}`;
           }
           
           return {
@@ -279,17 +355,30 @@ export default function ResultsScreen() {
             explanation: answer.explanation,
             question_text: questionText,
             options: options,
+            created_at: answer.created_at,
           };
         });
 
-        // Get only the latest attempt (last N questions)
-        // For final test, use all answers if no questions in pathway content
-        const questionsPerAttempt = questions.length > 0 ? questions.length : formattedAnswers.length;
-        const latestAttempt = formattedAnswers.slice(-questionsPerAttempt);
-        setQuizAnswers(latestAttempt);
+        // Group answers into attempts
+        const attempts: any[][] = [];
+        for (let i = 0; i < formattedAnswers.length; i += questionsPerAttempt) {
+          const attempt = formattedAnswers.slice(i, i + questionsPerAttempt);
+          if (attempt.length > 0) {
+            attempts.push(attempt);
+          }
+        }
+
+        console.log("Number of attempts found:", attempts.length);
+
+        // Keep chronological order: attempt 1 is oldest, last attempt is newest
+        setGroupedAttempts(attempts);
+        setSelectedAttempt(attempts.length - 1); // Select latest (last) attempt by default
+      } else {
+        setGroupedAttempts([]);
       }
     } catch (error) {
       console.error("Error fetching quiz detail:", error);
+      setGroupedAttempts([]);
     } finally {
       setModalLoading(false);
     }
@@ -372,6 +461,12 @@ export default function ResultsScreen() {
     : 0;
   const completedCount = quizResults.length;
   const totalQuizAndFinalTest = pathways.filter((p: any) => p.type === "quiz" || p.type === "final_test").length;
+
+  // Get current attempt's answers and score
+  const currentAttemptAnswers = groupedAttempts[selectedAttempt] || [];
+  const currentAttemptScore = currentAttemptAnswers.length > 0
+    ? Math.round((currentAttemptAnswers.filter((a: any) => a.is_correct).length / currentAttemptAnswers.length) * 100)
+    : 0;
 
   if (!user) {
     return (
@@ -562,7 +657,10 @@ export default function ResultsScreen() {
                     {selectedTitle}
                   </Text>
                   <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 13, marginTop: 4 }}>
-                    Pembahasan Jawaban Anda
+                    {groupedAttempts.length > 0 
+                      ? `${groupedAttempts.length} Percobaan • Skor: ${currentAttemptScore}/100`
+                      : "Pembahasan Jawaban Anda"
+                    }
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -591,7 +689,7 @@ export default function ResultsScreen() {
                   <ActivityIndicator size="large" color="#a5b4fc" />
                   <Text style={{ color: "#a5b4fc", marginTop: 16 }}>Memuat pembahasan...</Text>
                 </View>
-              ) : quizAnswers.length === 0 ? (
+              ) : groupedAttempts.length === 0 ? (
                 <View style={{ padding: 40, alignItems: "center" }}>
                   <Text style={{ fontSize: 40, marginBottom: 12 }}>📝</Text>
                   <Text style={{ color: "#a5b4fc", textAlign: "center" }}>
@@ -599,93 +697,135 @@ export default function ResultsScreen() {
                   </Text>
                 </View>
               ) : (
-                quizAnswers.map((answer, index) => (
-                  <View 
-                    key={index}
-                    style={{
-                      backgroundColor: "rgba(255,255,255,0.05)",
-                      borderRadius: 16,
-                      padding: 16,
-                      marginBottom: 16,
-                      borderLeftWidth: 4,
-                      borderLeftColor: answer.is_correct ? "#22c55e" : "#ef4444",
-                    }}
-                  >
-                    {/* Question Header */}
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
-                      <Text style={{ color: "white", fontSize: 15, fontWeight: "600", flex: 1, marginRight: 8 }}>
-                        Pertanyaan {index + 1}
+                <>
+                  {/* Attempt Selector */}
+                  <AttemptSelector
+                    attempts={groupedAttempts.length}
+                    selectedAttempt={selectedAttempt}
+                    onSelectAttempt={setSelectedAttempt}
+                  />
+
+                  {/* Score Summary for Selected Attempt */}
+                  <View style={{
+                    backgroundColor: "rgba(99,102,241,0.2)",
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 16,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}>
+                    <View>
+                      <Text style={{ color: "#a5b4fc", fontSize: 12 }}>
+                        Percobaan {selectedAttempt + 1}
                       </Text>
-                      <View style={{
-                        backgroundColor: answer.is_correct ? "#22c55e" : "#ef4444",
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        borderRadius: 12,
-                      }}>
-                        <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>
-                          {answer.is_correct ? "✓ Benar" : "✗ Salah"}
-                        </Text>
-                      </View>
+                      <Text style={{ color: "white", fontSize: 16, fontWeight: "600", marginTop: 4 }}>
+                        {currentAttemptAnswers.filter((a: any) => a.is_correct).length} dari {currentAttemptAnswers.length} benar
+                      </Text>
                     </View>
-
-                    {/* Question Text */}
-                    <Text style={{ color: "#e5e7eb", fontSize: 14, marginBottom: 12, lineHeight: 20 }}>
-                      {answer.question_text}
-                    </Text>
-
-                    {/* User Answer */}
-                    <View style={{ marginBottom: 8 }}>
-                      <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Jawaban Anda:</Text>
-                      <View style={{
-                        backgroundColor: answer.is_correct ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
-                        padding: 12,
-                        borderRadius: 8,
-                        borderWidth: 1,
-                        borderColor: answer.is_correct ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)",
-                      }}>
-                        <Text style={{ color: "white", fontSize: 14 }}>
-                          {answer.options[answer.user_answer] || "Tidak dijawab"}
-                        </Text>
-                      </View>
+                    <View style={{
+                      backgroundColor: currentAttemptScore >= 80 ? "#22c55e" : currentAttemptScore >= 60 ? "#eab308" : "#ef4444",
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderRadius: 12,
+                    }}>
+                      <Text style={{ color: "white", fontSize: 20, fontWeight: "bold" }}>
+                        {currentAttemptScore}
+                      </Text>
                     </View>
-
-                    {/* Correct Answer (if wrong) */}
-                    {!answer.is_correct && (
-                      <View style={{ marginBottom: 8 }}>
-                        <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Jawaban yang Benar:</Text>
-                        <View style={{
-                          backgroundColor: "rgba(34,197,94,0.2)",
-                          padding: 12,
-                          borderRadius: 8,
-                          borderWidth: 1,
-                          borderColor: "rgba(34,197,94,0.3)",
-                        }}>
-                          <Text style={{ color: "#22c55e", fontSize: 14 }}>
-                            {answer.options[answer.correct_answer]}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
-
-                    {/* Explanation */}
-                    {answer.explanation && (
-                      <View>
-                        <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Pembahasan:</Text>
-                        <View style={{
-                          backgroundColor: "rgba(99,102,241,0.1)",
-                          padding: 12,
-                          borderRadius: 8,
-                          borderWidth: 1,
-                          borderColor: "rgba(99,102,241,0.2)",
-                        }}>
-                          <Text style={{ color: "#a5b4fc", fontSize: 13, lineHeight: 20 }}>
-                            {answer.explanation}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
                   </View>
-                ))
+
+                  {/* Questions */}
+                  {currentAttemptAnswers.map((answer: any, index: number) => (
+                    <View 
+                      key={index}
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        borderRadius: 16,
+                        padding: 16,
+                        marginBottom: 16,
+                        borderLeftWidth: 4,
+                        borderLeftColor: answer.is_correct ? "#22c55e" : "#ef4444",
+                      }}
+                    >
+                      {/* Question Header */}
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+                        <Text style={{ color: "white", fontSize: 15, fontWeight: "600", flex: 1, marginRight: 8 }}>
+                          Pertanyaan {index + 1}
+                        </Text>
+                        <View style={{
+                          backgroundColor: answer.is_correct ? "#22c55e" : "#ef4444",
+                          paddingHorizontal: 10,
+                          paddingVertical: 4,
+                          borderRadius: 12,
+                        }}>
+                          <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>
+                            {answer.is_correct ? "✓ Benar" : "✗ Salah"}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Question Text */}
+                      <Text style={{ color: "#e5e7eb", fontSize: 14, marginBottom: 12, lineHeight: 20 }}>
+                        {answer.question_text}
+                      </Text>
+
+                      {/* User Answer */}
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Jawaban Anda:</Text>
+                        <View style={{
+                          backgroundColor: answer.is_correct ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
+                          padding: 12,
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: answer.is_correct ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)",
+                        }}>
+                          <Text style={{ color: "white", fontSize: 14 }}>
+                            {answer.options && answer.options[answer.user_answer] 
+                              ? answer.options[answer.user_answer] 
+                              : "Tidak dijawab"}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Correct Answer (if wrong) */}
+                      {!answer.is_correct && answer.options && answer.options[answer.correct_answer] && (
+                        <View style={{ marginBottom: 8 }}>
+                          <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Jawaban yang Benar:</Text>
+                          <View style={{
+                            backgroundColor: "rgba(34,197,94,0.2)",
+                            padding: 12,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: "rgba(34,197,94,0.3)",
+                          }}>
+                            <Text style={{ color: "#22c55e", fontSize: 14 }}>
+                              {answer.options[answer.correct_answer]}
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+
+                      {/* Explanation */}
+                      {answer.explanation && (
+                        <View>
+                          <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 4 }}>Pembahasan:</Text>
+                          <View style={{
+                            backgroundColor: "rgba(99,102,241,0.1)",
+                            padding: 12,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: "rgba(99,102,241,0.2)",
+                          }}>
+                            <Text style={{ color: "#a5b4fc", fontSize: 13, lineHeight: 20 }}>
+                              {answer.explanation}
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  ))}
+                </>
               )}
             </ScrollView>
 
