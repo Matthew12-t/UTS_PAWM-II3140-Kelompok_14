@@ -557,7 +557,7 @@ export default function ResultsScreen() {
             title="Total Nilai Terkini"
             value={totalScore}
             maxValue={maxPossibleScore || 300}
-            subtitle={`Dari ${completedCount} Hasil`}
+            subtitle={`dari ${completedCount} Hasil`}
             gradientColors={["#06b6d4", "#3b82f6"]}
           />
           <StatsCard
