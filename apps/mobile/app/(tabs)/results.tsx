@@ -20,11 +20,13 @@ import { useTheme, ThemeColors } from "../../lib/ThemeContext";
 const StatsCard = ({ 
   title, 
   value, 
+  maxValue,
   subtitle, 
   gradientColors 
 }: { 
   title: string; 
   value: string | number; 
+  maxValue?: string | number;
   subtitle: string;
   gradientColors: [string, string];
 }) => (
@@ -37,15 +39,23 @@ const StatsCard = ({
       borderRadius: 16,
       padding: 16,
       marginHorizontal: 4,
+      minHeight: 120,
     }}
   >
-    <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 13, marginBottom: 8 }}>
+    <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 12, fontWeight: "600", marginBottom: 12 }}>
       {title}
     </Text>
-    <Text style={{ color: "white", fontSize: 32, fontWeight: "bold", marginBottom: 4 }}>
-      {value}
-    </Text>
-    <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+    <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+      <Text style={{ color: "white", fontSize: 28, fontWeight: "bold" }}>
+        {value}
+      </Text>
+      {maxValue !== undefined && (
+        <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: "500" }}>
+          {` / ${maxValue}`}
+        </Text>
+      )}
+    </View>
+    <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, marginTop: 8 }}>
       {subtitle}
     </Text>
   </LinearGradient>
@@ -356,10 +366,12 @@ export default function ResultsScreen() {
 
   // Calculate statistics
   const totalScore = quizResults.reduce((sum, r) => sum + (r.score || 0), 0);
+  const maxPossibleScore = quizResults.length * 100;
   const averageScore = quizResults.length > 0 
     ? Math.round(totalScore / quizResults.length) 
     : 0;
   const completedCount = quizResults.length;
+  const totalQuizAndFinalTest = pathways.filter((p: any) => p.type === "quiz" || p.type === "final_test").length;
 
   if (!user) {
     return (
@@ -416,24 +428,54 @@ export default function ResultsScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
+        {/* Info Banner */}
+        <View style={{
+          backgroundColor: "#172554",
+          borderColor: "#2563EB", 
+          borderWidth: 1,
+          borderRadius: 12,
+          padding: 14,
+          marginBottom: 16,
+          flexDirection: "row",
+          alignItems: "flex-start",
+        }}>
+          <View style={{
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            backgroundColor: "white",
+            alignItems: "center",
+            justifyContent: "center",
+            marginRight: 10,
+            marginTop: 8,
+          }}>
+            <Text style={{ color: "#7ac6e9ff", fontSize: 14, fontWeight: "bold" }}>i</Text>
+          </View>
+          <Text style={{ color: "white", fontSize: 12, flex: 1, lineHeight: 20 }}>
+            Statistik di bawah dihitung berdasarkan <Text style={{ fontWeight: "bold" }}>PERCOBAAN TERAKHIR</Text> Anda pada setiap <Text style={{ fontWeight: "bold" }}>Kuis</Text> dan <Text style={{ fontWeight: "bold" }}>Tes Akhir</Text>.
+          </Text>
+        </View>
+
         {/* Stats Cards */}
         <View style={{ flexDirection: "row", marginBottom: 24, marginHorizontal: -4 }}>
           <StatsCard
-            title="Total Nilai"
+            title="Total Nilai Terkini"
             value={totalScore}
-            subtitle={`${completedCount} hasil`}
+            maxValue={maxPossibleScore || 300}
+            subtitle={`Dari ${completedCount} Hasil`}
             gradientColors={["#06b6d4", "#3b82f6"]}
           />
           <StatsCard
-            title="Rata-rata Nilai"
+            title="Rata-rata Terkini"
             value={averageScore}
             subtitle="dari 100"
             gradientColors={["#8b5cf6", "#a855f7"]}
           />
           <StatsCard
-            title="Selesai"
+            title="Progres Materi"
             value={completedCount}
-            subtitle="kuis & tes"
+            maxValue={`${totalQuizAndFinalTest} Selesai`}
+            subtitle="kuis & tes akhir"
             gradientColors={["#22c55e", "#10b981"]}
           />
         </View>

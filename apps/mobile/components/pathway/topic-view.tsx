@@ -197,14 +197,15 @@ export default function TopicView({ pathway, user, onComplete, onBack }: TopicVi
               </Text>
             </View>
             <View style={{
-              backgroundColor: "white",
+              backgroundColor: "#f8fafc",
               borderRadius: 12,
               overflow: "hidden",
+              padding: 8,
             }}>
               <Image
                 source={require("../../assets/images/perbandingan.jpg")}
-                style={{ width: "100%", height: 200 }}
-                resizeMode="contain"
+                style={{ width: "100%", height: 220 }}
+                resizeMode="cover"
               />
             </View>
             <Text style={{ color: "#a5b4fc", fontSize: 12, textAlign: "center", marginTop: 8 }}>

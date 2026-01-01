@@ -360,9 +360,9 @@ function SimulasiPembentukanIkatan({ pathway, onComplete, onBack }: { pathway: a
   const bias = 100;
   const midY = canvasHeight / 2;
 
-  // Atom positions
-  const [a1X, setA1X] = useState(canvasWidth * 0.35);
-  const [a2X, setA2X] = useState(canvasWidth * 0.65);
+  // Atom positions - default to neutral (farther apart)
+  const [a1X, setA1X] = useState(canvasWidth * 0.20);
+  const [a2X, setA2X] = useState(canvasWidth * 0.80);
 
   // Refs for pan responders
   const a1Offset = useRef(0);
@@ -423,8 +423,8 @@ function SimulasiPembentukanIkatan({ pathway, onComplete, onBack }: { pathway: a
   ).current;
 
   const handleReset = () => {
-    setA1X(canvasWidth * 0.35);
-    setA2X(canvasWidth * 0.65);
+    setA1X(canvasWidth * 0.20);
+    setA2X(canvasWidth * 0.80);
   };
 
   const handleComplete = async () => {
