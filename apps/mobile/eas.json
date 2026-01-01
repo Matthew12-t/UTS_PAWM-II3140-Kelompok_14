@@ -4,31 +4,32 @@
     "appVersionSource": "local"
   },
   "build": {
-    "base": {
+    "development": {
       "node": "20.18.0",
       "pnpm": "9.15.1",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
+      }
+    },
+    "preview": {
+      "node": "20.18.0",
+      "pnpm": "9.15.1",
+      "distribution": "internal",
       "env": {
         "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
       },
-      "cache": {
-        "customPaths": ["../../node_modules"]
-      },
-      "installCommand": "cd ../.. && pnpm install"
-    },
-    "development": {
-      "extends": "base",
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "extends": "base",
-      "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "extends": "base",
+      "node": "20.18.0",
+      "pnpm": "9.15.1",
+      "env": {
+        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
+      },
       "android": {
         "buildType": "apk"
       }
