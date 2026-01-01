@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
-# Install dependencies in the mobile app directory first
-# This ensures expo-router and other plugins are available before config is read
+echo "=== EAS Build Pre-Install Script ==="
+echo "Current directory: $(pwd)"
+echo "Node version: $(node --version)"
+echo "NPM version: $(npm --version)"
+
+# Install dependencies using npm
+echo "Installing dependencies with npm..."
 npm install --legacy-peer-deps
+
+echo "=== Dependencies installed successfully ===" 
+echo "Checking expo installation..."
+npx expo --version

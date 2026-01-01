@@ -7,7 +7,8 @@
     "base": {
       "node": "20.19.4",
       "env": {
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
+        "EAS_BUILD_AUTOCOMMIT": "0"
       }
     },
     "development": {
@@ -19,7 +20,8 @@
       "extends": "base",
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "withoutCredentials": false
       }
     },
     "production": {

@@ -1,27 +1,22 @@
-// Dynamic config that handles plugin resolution gracefully
-// This is needed because EAS Build reads config BEFORE installing dependencies
+// Dynamic Expo config for EAS Build compatibility
+module.exports = ({ config }) => {
+  // Plugins are only needed during prebuild (after npm install)
+  // During initial config read, we return empty plugins array
+  const isEASBuild = process.env.EAS_BUILD === 'true';
+  const hasExpoRouter = (() => {
+    try {
+      require.resolve("expo-router");
+      return true;
+    } catch (e) {
+      return false;
+    }
+  })();
 
-const plugins = [];
+  const plugins = hasExpoRouter 
+    ? ["expo-router", "expo-splash-screen"]
+    : [];
 
-// Only add plugins if they can be resolved (i.e., dependencies are installed)
-try {
-  require.resolve("expo-router");
-  plugins.push("expo-router");
-} catch (e) {
-  // expo-router not installed yet, skip plugin
-  console.log("expo-router plugin not available, skipping...");
-}
-
-try {
-  require.resolve("expo-splash-screen");
-  plugins.push("expo-splash-screen");
-} catch (e) {
-  // expo-splash-screen not installed yet, skip plugin
-  console.log("expo-splash-screen plugin not available, skipping...");
-}
-
-module.exports = {
-  expo: {
+  return {
     name: "ChemLab Mobile",
     slug: "chemlab-mobile",
     scheme: "chemlab",
@@ -56,5 +51,5 @@ module.exports = {
         projectId: "3d6bedea-8ff2-4a22-8459-fa49c7ed43b6"
       }
     }
-  }
+  };
 };
