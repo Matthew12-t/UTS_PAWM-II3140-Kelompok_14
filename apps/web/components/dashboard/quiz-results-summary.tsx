@@ -84,7 +84,7 @@ export function QuizResultsSummary({ user }: { user: User }) {
             {totalScore}
             <span className="text-lg font-medium text-white/70"> / {maxPossibleScore}</span>
           </p>
-          <p className="text-xs text-white/70 mt-2">Dari {results.length} Hasil</p>
+          <p className="text-xs text-white/70 mt-2">dari {results.length} Hasil</p>
         </Card>
 
         <Card className="p-6 bg-gradient-to-br from-violet-500 to-purple-500 border-0 text-white shadow-lg">

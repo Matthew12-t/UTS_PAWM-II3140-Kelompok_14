@@ -24,13 +24,13 @@ export function UserMenu({ user }: { user: User }) {
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem disabled>
+      <DropdownMenuContent align="end" className="bg-white border-gray-200">
+        <DropdownMenuItem disabled className="text-gray-500">
           <span className="text-sm">{user.email}</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>Profile</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>Settings</DropdownMenuItem>
-        <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+        <DropdownMenuItem onClick={() => router.push("/dashboard/profile")} className="text-gray-900 hover:bg-gray-100">Profile</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/dashboard/settings")} className="text-gray-900 hover:bg-gray-100">Settings</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout} className="text-red-600 hover:bg-red-50">
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>

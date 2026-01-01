@@ -10,8 +10,7 @@ import {
   AppState,
   Image,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
+import { useRouter, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase, getCurrentUser, signOut } from "../../lib/supabase";
 import { useTheme, ThemeColors } from "../../lib/ThemeContext";
