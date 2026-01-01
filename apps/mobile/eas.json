@@ -13,9 +13,7 @@
       "cache": {
         "customPaths": ["../../node_modules"]
       },
-      "android": {
-        "preInstall": "bash eas-build-pre-install.sh"
-      }
+      "installCommand": "cd ../.. && pnpm install"
     },
     "development": {
       "extends": "base",
@@ -26,15 +24,13 @@
       "extends": "base",
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "preInstall": "bash eas-build-pre-install.sh"
+        "buildType": "apk"
       }
     },
     "production": {
       "extends": "base",
       "android": {
-        "buildType": "apk",
-        "preInstall": "bash eas-build-pre-install.sh"
+        "buildType": "apk"
       }
     }
   },
