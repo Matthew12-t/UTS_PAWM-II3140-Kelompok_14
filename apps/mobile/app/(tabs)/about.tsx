@@ -71,20 +71,22 @@ const FeatureCard = ({
   title,
   description,
   gradientColors,
+  theme,
 }: {
   icon: string;
   title: string;
   description: string;
   gradientColors: string[];
+  theme: ThemeColors;
 }) => (
   <View
     style={{
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      backgroundColor: theme.cardBg,
       borderRadius: 16,
       padding: 20,
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.2)",
+      borderColor: theme.cardBorder,
     }}
   >
     <LinearGradient
@@ -102,7 +104,7 @@ const FeatureCard = ({
     </LinearGradient>
     <Text
       style={{
-        color: "white",
+        color: theme.textPrimary,
         fontSize: 18,
         fontWeight: "bold",
         marginBottom: 8,
@@ -110,7 +112,7 @@ const FeatureCard = ({
     >
       {title}
     </Text>
-    <Text style={{ color: "rgba(199, 210, 254, 0.8)", fontSize: 14, lineHeight: 20 }}>
+    <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}>
       {description}
     </Text>
   </View>
@@ -124,6 +126,7 @@ const PathwayPreviewCard = ({
   modules,
   duration,
   gradientColors,
+  theme,
 }: {
   icon: string;
   title: string;
@@ -131,15 +134,16 @@ const PathwayPreviewCard = ({
   modules: number;
   duration: string;
   gradientColors: string[];
+  theme: ThemeColors;
 }) => (
   <View
     style={{
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      backgroundColor: theme.cardBg,
       borderRadius: 16,
       padding: 20,
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.2)",
+      borderColor: theme.cardBorder,
       width: width * 0.75,
       marginRight: 16,
     }}
@@ -159,7 +163,7 @@ const PathwayPreviewCard = ({
     </LinearGradient>
     <Text
       style={{
-        color: "white",
+        color: theme.textPrimary,
         fontSize: 20,
         fontWeight: "bold",
         marginBottom: 8,
@@ -169,7 +173,7 @@ const PathwayPreviewCard = ({
     </Text>
     <Text
       style={{
-        color: "rgba(199, 210, 254, 0.8)",
+        color: theme.textSecondary,
         fontSize: 14,
         marginBottom: 16,
         lineHeight: 20,
@@ -180,23 +184,23 @@ const PathwayPreviewCard = ({
     <View style={{ flexDirection: "row", gap: 12 }}>
       <View
         style={{
-          backgroundColor: "rgba(99, 102, 241, 0.3)",
+          backgroundColor: "rgba(99, 102, 241, 0.2)",
           paddingHorizontal: 12,
           paddingVertical: 6,
           borderRadius: 20,
         }}
       >
-        <Text style={{ color: "#a5b4fc", fontSize: 12 }}>{modules} Modules</Text>
+        <Text style={{ color: "#6366f1", fontSize: 12 }}>{modules} Modules</Text>
       </View>
       <View
         style={{
-          backgroundColor: "rgba(99, 102, 241, 0.3)",
+          backgroundColor: "rgba(99, 102, 241, 0.2)",
           paddingHorizontal: 12,
           paddingVertical: 6,
           borderRadius: 20,
         }}
       >
-        <Text style={{ color: "#a5b4fc", fontSize: 12 }}>{duration}</Text>
+        <Text style={{ color: "#6366f1", fontSize: 12 }}>{duration}</Text>
       </View>
     </View>
   </View>
@@ -213,18 +217,20 @@ const TeamMemberCard = ({
   name,
   nim,
   photoKey,
+  theme,
 }: {
   name: string;
   nim: string;
   photoKey: string;
+  theme: ThemeColors;
 }) => (
   <View
     style={{
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      backgroundColor: theme.cardBg,
       borderRadius: 16,
       padding: 20,
       borderWidth: 1,
-      borderColor: "rgba(255, 255, 255, 0.2)",
+      borderColor: theme.cardBorder,
       alignItems: "center",
       minHeight: 180,
     }}
@@ -246,7 +252,7 @@ const TeamMemberCard = ({
       />
     </View>
     <Text style={{ 
-      color: "white", 
+      color: theme.textPrimary, 
       fontSize: 14, 
       fontWeight: "bold", 
       marginBottom: 4,
@@ -254,7 +260,7 @@ const TeamMemberCard = ({
     }}>
       {name}
     </Text>
-    <Text style={{ color: "rgba(199, 210, 254, 0.6)", fontSize: 11, textAlign: "center" }}>
+    <Text style={{ color: theme.textSecondary, fontSize: 11, textAlign: "center" }}>
       NIM: {nim}
     </Text>
   </View>
@@ -365,24 +371,28 @@ export default function AboutScreen() {
             title="Pembelajaran Interaktif"
             description="Pelajari kimia melalui eksperimen virtual dan simulasi hands-on."
             gradientColors={["#6366f1", "#8b5cf6"]}
+            theme={theme}
           />
           <FeatureCard
             icon="📊"
             title="Pantau Progress"
             description="Monitor perjalanan belajar Anda dengan analitik detail dan metrik performa."
             gradientColors={["#06b6d4", "#3b82f6"]}
+            theme={theme}
           />
           <FeatureCard
             icon="🏆"
             title="Kuis & Tes"
             description="Dapatkan feedback instan dan bangun pengetahuan kimia Anda dengan kuis interaktif."
             gradientColors={["#10b981", "#06b6d4"]}
+            theme={theme}
           />
           <FeatureCard
             icon="📱"
             title="Cross-Platform"
             description="Akses dari web browser atau aplikasi mobile, belajar kapan saja di mana saja."
             gradientColors={["#f59e0b", "#ef4444"]}
+            theme={theme}
           />
         </View>
 
@@ -422,6 +432,7 @@ export default function AboutScreen() {
               modules={3}
               duration="3 jam"
               gradientColors={["#6366f1", "#8b5cf6"]}
+              theme={theme}
             />
             <PathwayPreviewCard
               icon="🧬"
@@ -430,6 +441,7 @@ export default function AboutScreen() {
               modules={3}
               duration="4 jam"
               gradientColors={["#06b6d4", "#3b82f6"]}
+              theme={theme}
             />
             <PathwayPreviewCard
               icon="📝"
@@ -438,6 +450,7 @@ export default function AboutScreen() {
               modules={1}
               duration="1 jam"
               gradientColors={["#10b981", "#06b6d4"]}
+              theme={theme}
             />
           </ScrollView>
         </View>
@@ -460,15 +473,15 @@ export default function AboutScreen() {
               <View
                 key={tech}
                 style={{
-                  backgroundColor: "rgba(99, 102, 241, 0.2)",
+                  backgroundColor: theme.cardBg,
                   paddingHorizontal: 14,
                   paddingVertical: 8,
                   borderRadius: 20,
                   borderWidth: 1,
-                  borderColor: "rgba(99, 102, 241, 0.3)",
+                  borderColor: theme.cardBorder,
                 }}
               >
-                <Text style={{ color: "#a5b4fc", fontSize: 13 }}>{tech}</Text>
+                <Text style={{ color: "#6366f1", fontSize: 13 }}>{tech}</Text>
               </View>
             ))}
           </View>
@@ -496,6 +509,7 @@ export default function AboutScreen() {
                 name="Matthew Sebastian Kurniawan"
                 nim="18223096"
                 photoKey="matthew"
+                theme={theme}
               />
             </View>
 
@@ -505,6 +519,7 @@ export default function AboutScreen() {
                 name="Darryl Rayhananta Adenan" 
                 nim="18223042"
                 photoKey="darryl"
+                theme={theme}
               />
             </View>
 
@@ -518,7 +533,7 @@ export default function AboutScreen() {
             paddingVertical: 32,
             alignItems: "center",
             borderTopWidth: 1,
-            borderTopColor: "rgba(255, 255, 255, 0.1)",
+            borderTopColor: theme.cardBorder,
             marginTop: 20,
           }}
         >
@@ -535,13 +550,13 @@ export default function AboutScreen() {
               style={{ width: 28, height: 28 }} 
               resizeMode="contain"
             />
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
+            <Text style={{ color: theme.textPrimary, fontSize: 18, fontWeight: "bold" }}>
               ChemLab
             </Text>
           </View>
           <Text
             style={{
-              color: "rgba(199, 210, 254, 0.6)",
+              color: theme.textSecondary,
               fontSize: 12,
               textAlign: "center",
             }}
