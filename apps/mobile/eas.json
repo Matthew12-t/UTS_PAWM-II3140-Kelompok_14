@@ -4,20 +4,26 @@
     "appVersionSource": "local"
   },
   "build": {
-    "development": {
+    "base": {
       "node": "20.19.4",
+      "env": {
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      }
+    },
+    "development": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
-      "node": "20.19.4",
+      "extends": "base",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "node": "20.19.4",
+      "extends": "base",
       "android": {
         "buildType": "apk"
       }

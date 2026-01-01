@@ -1,0 +1,4 @@
+# Ignore monorepo root files that could confuse EAS
+../../pnpm-lock.yaml
+../../pnpm-workspace.yaml
+../../.npmrc
