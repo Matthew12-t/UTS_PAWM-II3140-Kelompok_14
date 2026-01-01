@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -26,11 +26,42 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
   const [showResults, setShowResults] = useState(false)
   const [score, setScore] = useState(0)
   const [isCompleting, setIsCompleting] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(600) // 10 menit dalam detik
+  const [testStarted, setTestStarted] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   // Get questions from pathway.content (same as quiz system)
   const questions = pathway.content?.questions || []
+
+  // Format waktu menjadi MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+  }
+
+  // Ref untuk handleSubmit agar bisa dipanggil dari timer
+  const handleSubmitRef = useRef<(() => Promise<void>) | null>(null)
+
+  // Timer effect - countdown dan auto-submit jika waktu habis
+  useEffect(() => {
+    if (!testStarted || showResults) return
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          // Auto submit ketika waktu habis
+          handleSubmitRef.current?.()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [testStarted, showResults])
 
   const handleAnswer = (optionIndex: number) => {
     const newAnswers = [...answers]
@@ -100,6 +131,9 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
       .eq("user_id", user.id)
   }
 
+  // Assign ref untuk timer auto-submit
+  handleSubmitRef.current = handleSubmit
+
   const handleComplete = async () => {
     setIsCompleting(true)
     try {
@@ -137,6 +171,54 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
     } finally {
       setIsCompleting(false)
     }
+  }
+
+  const handleStartTest = () => {
+    setTestStarted(true)
+    setTimeLeft(600) // Reset timer ke 10 menit
+  }
+
+  // Tampilan sebelum tes dimulai
+  if (!testStarted) {
+    return (
+      <article className="space-y-6">
+        <header>
+          <Card className="p-8 bg-gradient-to-br from-red-50 to-orange-50 border-red-200">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{pathway.title}</h2>
+            <p className="text-gray-600 mb-6">{pathway.description}</p>
+            
+            <div className="bg-white/80 rounded-lg p-6 mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">📋 Informasi Tes</h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-center gap-2">
+                  <span className="text-red-500">⏱️</span>
+                  <span>Batas waktu: <strong>10 menit</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-purple-500">📝</span>
+                  <span>Jumlah soal: <strong>{questions.length} pertanyaan</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-amber-500">⚠️</span>
+                  <span>Tes akan otomatis dikumpulkan jika waktu habis</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-500">✅</span>
+                  <span>Anda dapat berpindah antar soal selama waktu masih tersisa</span>
+                </li>
+              </ul>
+            </div>
+
+            <Button 
+              onClick={handleStartTest}
+              className="w-full bg-red-600 hover:bg-red-700 text-lg py-6"
+            >
+              🚀 Mulai Tes Akhir
+            </Button>
+          </Card>
+        </header>
+      </article>
+    )
   }
 
   if (showResults) {
@@ -185,7 +267,19 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
     <article className="space-y-6">
       <header>
         <Card className="p-8 bg-gradient-to-br from-red-50 to-orange-50 border-red-200">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">{pathway.title}</h2>
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-3xl font-bold text-gray-900">{pathway.title}</h2>
+            {/* Timer Display */}
+            <div className={`px-4 py-2 rounded-lg font-mono text-xl font-bold ${
+              timeLeft <= 60 
+                ? 'bg-red-100 text-red-600 animate-pulse' 
+                : timeLeft <= 180 
+                  ? 'bg-amber-100 text-amber-600' 
+                  : 'bg-green-100 text-green-600'
+            }`}>
+              ⏱️ {formatTime(timeLeft)}
+            </div>
+          </div>
           <div className="flex justify-between items-center">
             <p className="text-lg text-gray-700">
               Pertanyaan {currentQuestion + 1} dari {questions.length}
@@ -197,6 +291,12 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
               ></div>
             </div>
           </div>
+          {/* Peringatan waktu hampir habis */}
+          {timeLeft <= 60 && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+              ⚠️ Waktu hampir habis! Segera selesaikan tes Anda.
+            </div>
+          )}
         </Card>
       </header>
 
