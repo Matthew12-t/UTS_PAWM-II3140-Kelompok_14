@@ -31,20 +31,16 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
   const router = useRouter()
   const supabase = createClient()
 
-  // Get questions from pathway.content 
   const questions = pathway.content?.questions || []
 
-  // Format waktu menjadi MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  // Ref untuk handleSubmit agar bisa dipanggil dari timer
   const handleSubmitRef = useRef<(() => Promise<void>) | null>(null)
 
-  // Timer effect -
   useEffect(() => {
     if (!testStarted || showResults) return
 
@@ -52,7 +48,6 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          // Auto submit ketika waktu habis
           handleSubmitRef.current?.()
           return 0
         }
@@ -98,7 +93,6 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
       const userAnswer = answers[i]
       const isCorrect = userAnswer === question.correct_answer
       
-      // Create explanation with correct/wrong feedback 
       const baseExplanation = question.explanation || "Silakan pelajari kembali materi terkait."
       const explanation = isCorrect
         ? `✓ Jawaban Anda benar!\n\n${baseExplanation}`
@@ -131,7 +125,6 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
       .eq("user_id", user.id)
   }
 
-  // Assign ref untuk timer auto-submit
   handleSubmitRef.current = handleSubmit
 
   const handleComplete = async () => {
@@ -178,7 +171,6 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
     setTimeLeft(1500)
   }
 
-  // Tampilan sebelum tes dimulai
   if (!testStarted) {
     return (
       <article className="space-y-6">
