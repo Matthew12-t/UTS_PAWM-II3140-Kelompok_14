@@ -26,12 +26,12 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
   const [showResults, setShowResults] = useState(false)
   const [score, setScore] = useState(0)
   const [isCompleting, setIsCompleting] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(600) // 10 menit dalam detik
+  const [timeLeft, setTimeLeft] = useState(1500) 
   const [testStarted, setTestStarted] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
-  // Get questions from pathway.content (same as quiz system)
+  // Get questions from pathway.content 
   const questions = pathway.content?.questions || []
 
   // Format waktu menjadi MM:SS
@@ -44,7 +44,7 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
   // Ref untuk handleSubmit agar bisa dipanggil dari timer
   const handleSubmitRef = useRef<(() => Promise<void>) | null>(null)
 
-  // Timer effect - countdown dan auto-submit jika waktu habis
+  // Timer effect -
   useEffect(() => {
     if (!testStarted || showResults) return
 
@@ -98,7 +98,7 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
       const userAnswer = answers[i]
       const isCorrect = userAnswer === question.correct_answer
       
-      // Create explanation with correct/wrong feedback (use question.explanation from database)
+      // Create explanation with correct/wrong feedback 
       const baseExplanation = question.explanation || "Silakan pelajari kembali materi terkait."
       const explanation = isCorrect
         ? `✓ Jawaban Anda benar!\n\n${baseExplanation}`
@@ -175,7 +175,7 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
 
   const handleStartTest = () => {
     setTestStarted(true)
-    setTimeLeft(600) // Reset timer ke 10 menit
+    setTimeLeft(1500)
   }
 
   // Tampilan sebelum tes dimulai
@@ -192,7 +192,7 @@ export default function FinalTestView({ pathway, user }: FinalTestViewProps) {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center gap-2">
                   <span className="text-red-500">⏱️</span>
-                  <span>Batas waktu: <strong>10 menit</strong></span>
+                  <span>Batas waktu: <strong>25 menit</strong></span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-purple-500">📝</span>
