@@ -10,7 +10,6 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
-// Settings Item Component
 function SettingsItem({ 
   icon, 
   title, 
@@ -53,7 +52,6 @@ function SettingsItem({
   )
 }
 
-// Settings Section Component
 function SettingsSection({ 
   title, 
   children 
@@ -159,7 +157,6 @@ export default function SettingsContent({ user }: { user: User }) {
 
     setIsResetting(true)
     try {
-      // Delete quiz answers (includes final test answers now)
       const { error: quizError } = await supabase
         .from("quiz_answers")
         .delete()
@@ -169,7 +166,6 @@ export default function SettingsContent({ user }: { user: User }) {
         console.error("Error deleting quiz answers:", quizError)
       }
 
-      // Delete user pathway progress
       const { error: progressError } = await supabase
         .from("user_pathway_progress")
         .delete()
