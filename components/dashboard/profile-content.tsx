@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react"
 import type { User } from "@supabase/supabase-js"
-import { createClient } from "@/lib/supabase/client"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface UserProfile {
   full_name: string
@@ -19,28 +19,78 @@ export default function ProfileContent({ user }: { user: User }) {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [fullName, setFullName] = useState("")
-  const supabase = createClient()
+  const [saving, setSaving] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data } = await supabase.from("user_profiles").select("*").eq("id", user.id).single()
-
-      if (data) {
-        setProfile(data)
-        setFullName(data.full_name || "")
+      try {
+        const response = await fetch('/api/profile')
+        const data = await response.json()
+        
+        if (response.ok) {
+          setProfile(data)
+          setFullName(data.full_name || "")
+        } else {
+          // Fallback ke user_metadata
+          setProfile({
+            full_name: user.user_metadata?.full_name || "",
+            email: user.email || "",
+            avatar_url: user.user_metadata?.avatar_url || null
+          })
+          setFullName(user.user_metadata?.full_name || "")
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error)
+        // Fallback ke user_metadata
+        setProfile({
+          full_name: user.user_metadata?.full_name || "",
+          email: user.email || "",
+          avatar_url: user.user_metadata?.avatar_url || null
+        })
+        setFullName(user.user_metadata?.full_name || "")
       }
       setLoading(false)
     }
 
     fetchProfile()
-  }, [user.id, supabase])
+  }, [user])
 
   const handleUpdateProfile = async () => {
-    const { error } = await supabase.from("user_profiles").update({ full_name: fullName }).eq("id", user.id)
+    if (!fullName.trim()) {
+      alert("Nama tidak boleh kosong")
+      return
+    }
 
-    if (!error) {
-      setProfile({ ...profile!, full_name: fullName })
+    setSaving(true)
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ full_name: fullName.trim() })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert("Error: " + (data.error || "Gagal memperbarui profil"))
+        return
+      }
+
+      if (data.warning) {
+        console.warn(data.warning)
+      }
+
+      setProfile({ ...profile!, full_name: fullName.trim() })
       setEditing(false)
+      alert("Profil berhasil diperbarui!")
+      router.refresh()
+    } catch (err: any) {
+      alert(err.message || "Gagal memperbarui profil")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -107,11 +157,20 @@ export default function ProfileContent({ user }: { user: User }) {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                 {editing ? (
                   <div className="flex gap-2">
-                    <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="flex-1" />
-                    <Button onClick={handleUpdateProfile} className="bg-indigo-600 hover:bg-indigo-700">
-                      Save
+                    <Input 
+                      value={fullName} 
+                      onChange={(e) => setFullName(e.target.value)} 
+                      className="flex-1" 
+                      disabled={saving}
+                    />
+                    <Button 
+                      onClick={handleUpdateProfile} 
+                      className="bg-indigo-600 hover:bg-indigo-700"
+                      disabled={saving}
+                    >
+                      {saving ? "Saving..." : "Save"}
                     </Button>
-                    <Button onClick={() => setEditing(false)} variant="outline">
+                    <Button onClick={() => setEditing(false)} variant="outline" disabled={saving}>
                       Cancel
                     </Button>
                   </div>

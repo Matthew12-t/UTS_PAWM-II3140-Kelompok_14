@@ -76,10 +76,17 @@ export default function SettingsContent({ user }: { user: User }) {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
   const [editName, setEditName] = useState(user.user_metadata?.full_name || "")
+  const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [saving, setSaving] = useState(false)
+  const [passwordError, setPasswordError] = useState("")
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
   const router = useRouter()
+
+  // Cek apakah user login dengan email/password (bukan OAuth seperti Google)
+  const isEmailProvider = user.app_metadata?.provider === 'email' || 
+    user.identities?.some(identity => identity.provider === 'email')
   const supabase = createClient()
 
   const handleLogout = async () => {
@@ -95,17 +102,29 @@ export default function SettingsContent({ user }: { user: User }) {
 
     setSaving(true)
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: editName.trim() }
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ full_name: editName.trim() })
       })
 
-      if (error) {
-        alert("Error: " + error.message)
-      } else {
-        setEditModalOpen(false)
-        alert("Profil berhasil diperbarui")
-        router.refresh()
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert("Error: " + (data.error || "Gagal memperbarui profil"))
+        setSaving(false)
+        return
       }
+
+      if (data.warning) {
+        console.warn(data.warning)
+      }
+
+      setEditModalOpen(false)
+      alert("Profil berhasil diperbarui")
+      router.refresh()
     } catch (err: any) {
       alert(err.message || "Gagal memperbarui profil")
     } finally {
@@ -114,37 +133,63 @@ export default function SettingsContent({ user }: { user: User }) {
   }
 
   const handleChangePassword = async () => {
+    setPasswordError("")
+    setPasswordSuccess(false)
+
+    if (!currentPassword.trim()) {
+      setPasswordError("Password saat ini tidak boleh kosong")
+      return
+    }
+
     if (!newPassword.trim()) {
-      alert("Password baru tidak boleh kosong")
+      setPasswordError("Password baru tidak boleh kosong")
       return
     }
 
     if (newPassword.length < 6) {
-      alert("Password minimal 6 karakter")
+      setPasswordError("Password minimal 6 karakter")
       return
     }
 
     if (newPassword !== confirmPassword) {
-      alert("Konfirmasi password tidak cocok")
+      setPasswordError("Konfirmasi password tidak cocok")
       return
     }
 
     setSaving(true)
     try {
+      // Verifikasi password saat ini dengan re-authenticate
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email || "",
+        password: currentPassword
+      })
+
+      if (signInError) {
+        setPasswordError("Password saat ini salah")
+        setSaving(false)
+        return
+      }
+
+      // Update password baru
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       })
 
       if (error) {
-        alert("Error: " + error.message)
+        setPasswordError("Gagal memperbarui password: " + error.message)
       } else {
-        setPasswordModalOpen(false)
+        setPasswordSuccess(true)
+        setCurrentPassword("")
         setNewPassword("")
         setConfirmPassword("")
-        alert("Password berhasil diperbarui")
+        setTimeout(() => {
+          setPasswordModalOpen(false)
+          setPasswordSuccess(false)
+          alert("Password berhasil diperbarui!")
+        }, 1500)
       }
     } catch (err: any) {
-      alert(err.message || "Gagal memperbarui password")
+      setPasswordError(err.message || "Gagal memperbarui password")
     } finally {
       setSaving(false)
     }
@@ -261,12 +306,20 @@ export default function SettingsContent({ user }: { user: User }) {
             subtitle="Ubah nama dan foto profil"
             onClick={() => setEditModalOpen(true)}
           />
-          <SettingsItem
-            icon="🔒"
-            title="Ubah Password"
-            subtitle="Perbarui kata sandi Anda"
-            onClick={() => setPasswordModalOpen(true)}
-          />
+          {isEmailProvider ? (
+            <SettingsItem
+              icon="🔒"
+              title="Ubah Password"
+              subtitle="Perbarui kata sandi Anda"
+              onClick={() => setPasswordModalOpen(true)}
+            />
+          ) : (
+            <SettingsItem
+              icon="🔒"
+              title="Ubah Password"
+              subtitle="Tidak tersedia untuk login Google"
+            />
+          )}
           <SettingsItem
             icon="📧"
             title="Email"
@@ -367,59 +420,97 @@ export default function SettingsContent({ user }: { user: User }) {
               Ubah Password
             </h2>
             
-            <div className="space-y-4 mb-6">
-              <div>
-                <Label htmlFor="newPassword" className="text-gray-700">
-                  Password Baru
-                </Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Masukkan password baru"
-                  className="mt-2"
-                />
+            {passwordSuccess ? (
+              <div className="text-center py-8">
+                <div className="text-5xl mb-4">✅</div>
+                <p className="text-green-600 font-semibold">Password berhasil diperbarui!</p>
               </div>
-              <div>
-                <Label htmlFor="confirmPassword" className="text-gray-700">
-                  Konfirmasi Password
-                </Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Konfirmasi password baru"
-                  className="mt-2"
-                />
-              </div>
-              <p className="text-xs text-gray-500">
-                Password minimal 6 karakter
-              </p>
-            </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <Label htmlFor="currentPassword" className="text-gray-700">
+                      Password Saat Ini
+                    </Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => {
+                        setCurrentPassword(e.target.value)
+                        setPasswordError("")
+                      }}
+                      placeholder="Masukkan password saat ini"
+                      className="mt-2"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="newPassword" className="text-gray-700">
+                      Password Baru
+                    </Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => {
+                        setNewPassword(e.target.value)
+                        setPasswordError("")
+                      }}
+                      placeholder="Masukkan password baru"
+                      className="mt-2"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword" className="text-gray-700">
+                      Konfirmasi Password
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value)
+                        setPasswordError("")
+                      }}
+                      placeholder="Konfirmasi password baru"
+                      className="mt-2"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Password minimal 6 karakter
+                  </p>
+                  {passwordError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-600">{passwordError}</p>
+                    </div>
+                  )}
+                </div>
 
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setPasswordModalOpen(false)
-                  setNewPassword("")
-                  setConfirmPassword("")
-                }}
-                disabled={saving}
-                className="flex-1"
-              >
-                Batal
-              </Button>
-              <Button
-                onClick={handleChangePassword}
-                disabled={saving}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-              >
-                {saving ? "Menyimpan..." : "Simpan"}
-              </Button>
-            </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setPasswordModalOpen(false)
+                      setCurrentPassword("")
+                      setNewPassword("")
+                      setConfirmPassword("")
+                      setPasswordError("")
+                    }}
+                    disabled={saving}
+                    className="flex-1"
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    onClick={handleChangePassword}
+                    disabled={saving}
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    {saving ? "Menyimpan..." : "Simpan"}
+                  </Button>
+                </div>
+              </>
+            )}
           </Card>
         </div>
       )}
